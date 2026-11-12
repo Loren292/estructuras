@@ -1,6 +1,16 @@
 <!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Losas de Estructuras II</title>
 <meta name="claude:viewport-fit-sides" content="cover">
+<script>
+/* Apariencia guardada (estilo, modo y ayudas): se aplica antes de dibujar, para que no parpadee */
+(() => {
+  let a = null; try { a = JSON.parse(localStorage.getItem('estructuras-apariencia-v1')); } catch (e) {}
+  const r = document.documentElement;
+  if (a && /^(papel|pizarra|contraste)$/.test(a.skin)) r.setAttribute('data-skin', a.skin);
+  if (a && a.modo === 'claro') r.setAttribute('data-theme', 'light'); else if (a && a.modo === 'oscuro') r.setAttribute('data-theme', 'dark');
+  if (a && a.ayudas === 'no') r.setAttribute('data-ayudas', 'no');
+})();
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
@@ -41,6 +51,101 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 #v-form .buscar{top:var(--gnav)}
 @media (max-width:900px){ #v-3d.view-pg{height:auto} }
 @media (max-width:600px){ .gnav-in{flex-wrap:nowrap;gap:10px;padding-block:5px} .gnav b{display:none} .gnav nav{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;min-width:0;flex:1} .gnav nav::-webkit-scrollbar{display:none} .gnav a{font-size:14px;padding:9px 11px} #v-form.view-pg article{scroll-margin-top:calc(var(--gnav) + 110px)} }
+
+/* ===== Estilos (data-skin) × modo (data-theme). "Hormigón" es el de siempre: sin atributo.
+   Cada estilo cambia solo los colores neutros, el acento y los fondos del 3D; los colores de materiales y de estados
+   (hierro, ladrillo, bien, ojo) siguen siendo los de cada sección en claro u oscuro. Se aplica a la barra (html) y a cada sección. */
+html[data-skin="papel"], html[data-skin="papel"] :is(#v-glos,#v-form,#v-guia,#v-ent,#v-3d){
+  --bg:#f4efe5; --surface:#fffbf3; --surface-2:#f2ebdd; --ink:#2b2118; --muted:#6c5d4c; --line:#e0d5c1;
+  --accent:#8a4b1f; --accent-soft:#f2e2d1; --hl:#fbefc8; --hl-ink:#5c4300; --slab:#ede4d3; --sel:#efdcc8;
+  --scene:#ebe3d4; --ground:#e1d7c5; --grid:#cfc2ab; --label-bg:rgba(255,251,243,.92); color-scheme:light;
+}
+html[data-skin="papel"][data-theme="dark"], html[data-skin="papel"][data-theme="dark"] :is(#v-glos,#v-form,#v-guia,#v-ent,#v-3d){
+  --bg:#1c1712; --surface:#251f19; --surface-2:#2d261e; --ink:#eee3d1; --muted:#b2a28b; --line:#3c3329;
+  --accent:#e0a96d; --accent-soft:#3a2a1b; --hl:#3b3015; --hl-ink:#f2d48a; --slab:#322a21; --sel:#4a3824;
+  --scene:#221c16; --ground:#2a231c; --grid:#3b3228; --label-bg:rgba(37,31,25,.92); color-scheme:dark;
+}
+html[data-skin="pizarra"], html[data-skin="pizarra"] :is(#v-glos,#v-form,#v-guia,#v-ent,#v-3d){
+  --bg:#e8edf2; --surface:#f8fafc; --surface-2:#edf1f5; --ink:#1d2733; --muted:#536170; --line:#cdd7e1;
+  --accent:#2c6c8c; --accent-soft:#dbebf2; --hl:#fff1cc; --hl-ink:#5f4700; --slab:#e0e7ee; --sel:#cde3ee;
+  --scene:#dce4eb; --ground:#cfd8e1; --grid:#b7c4d0; --label-bg:rgba(248,250,252,.92); color-scheme:light;
+}
+html[data-skin="pizarra"][data-theme="dark"], html[data-skin="pizarra"][data-theme="dark"] :is(#v-glos,#v-form,#v-guia,#v-ent,#v-3d){
+  --bg:#151e28; --surface:#1b2631; --surface-2:#212e3b; --ink:#d5dfe9; --muted:#8ea0b2; --line:#2b3947;
+  --accent:#7cc4e4; --accent-soft:#1c3341; --hl:#2e3220; --hl-ink:#e3e7a8; --slab:#243240; --sel:#21445a;
+  --scene:#19242f; --ground:#202e3c; --grid:#2d3e50; --label-bg:rgba(27,38,49,.92); color-scheme:dark;
+}
+html[data-skin="contraste"], html[data-skin="contraste"] :is(#v-glos,#v-form,#v-guia,#v-ent,#v-3d){
+  --bg:#ffffff; --surface:#ffffff; --surface-2:#f0f0f0; --ink:#000000; --muted:#222222; --line:#6b6b6b;
+  --accent:#0037b3; --accent-soft:#dfe7ff; --hl:#ffe94d; --hl-ink:#000000; --slab:#eeeeee; --sel:#c9d6ff;
+  --scene:#f2f2f2; --ground:#e2e2e2; --grid:#8a8a8a; --label-bg:#ffffff; color-scheme:light;
+}
+html[data-skin="contraste"][data-theme="dark"], html[data-skin="contraste"][data-theme="dark"] :is(#v-glos,#v-form,#v-guia,#v-ent,#v-3d){
+  --bg:#000000; --surface:#000000; --surface-2:#161616; --ink:#ffffff; --muted:#e6e6e6; --line:#9a9a9a;
+  --accent:#ffd60a; --accent-soft:#332b00; --hl:#ffd60a; --hl-ink:#000000; --slab:#1c1c1c; --sel:#4d4000;
+  --scene:#0a0a0a; --ground:#151515; --grid:#555555; --label-bg:rgba(0,0,0,.92); color-scheme:dark;
+}
+@media (prefers-color-scheme: dark){
+  html[data-skin="papel"]:not([data-theme="light"]), html[data-skin="papel"]:not([data-theme="light"]) :is(#v-glos,#v-form,#v-guia,#v-ent,#v-3d){
+    --bg:#1c1712; --surface:#251f19; --surface-2:#2d261e; --ink:#eee3d1; --muted:#b2a28b; --line:#3c3329;
+    --accent:#e0a96d; --accent-soft:#3a2a1b; --hl:#3b3015; --hl-ink:#f2d48a; --slab:#322a21; --sel:#4a3824;
+    --scene:#221c16; --ground:#2a231c; --grid:#3b3228; --label-bg:rgba(37,31,25,.92); color-scheme:dark;
+  }
+  html[data-skin="pizarra"]:not([data-theme="light"]), html[data-skin="pizarra"]:not([data-theme="light"]) :is(#v-glos,#v-form,#v-guia,#v-ent,#v-3d){
+    --bg:#151e28; --surface:#1b2631; --surface-2:#212e3b; --ink:#d5dfe9; --muted:#8ea0b2; --line:#2b3947;
+    --accent:#7cc4e4; --accent-soft:#1c3341; --hl:#2e3220; --hl-ink:#e3e7a8; --slab:#243240; --sel:#21445a;
+    --scene:#19242f; --ground:#202e3c; --grid:#2d3e50; --label-bg:rgba(27,38,49,.92); color-scheme:dark;
+  }
+  html[data-skin="contraste"]:not([data-theme="light"]), html[data-skin="contraste"]:not([data-theme="light"]) :is(#v-glos,#v-form,#v-guia,#v-ent,#v-3d){
+    --bg:#000000; --surface:#000000; --surface-2:#161616; --ink:#ffffff; --muted:#e6e6e6; --line:#9a9a9a;
+    --accent:#ffd60a; --accent-soft:#332b00; --hl:#ffd60a; --hl-ink:#000000; --slab:#1c1c1c; --sel:#4d4000;
+    --scene:#0a0a0a; --ground:#151515; --grid:#555555; --label-bg:rgba(0,0,0,.92); color-scheme:dark;
+  }
+}
+
+/* ===== Menos ruido: el rótulo institucional repetido y el párrafo del Glosario que solo explica las otras pestañas
+   (en la página única ya están en la barra de arriba) */
+#v-glos.view-pg header > .eyebrow, #v-guia.view-pg #mapa .head > .eyebrow, #v-glos.view-pg header p:has(a[href="#mapa"]){display:none}
+
+/* ===== Botón y panel de Apariencia */
+.gnav-ap{display:inline-flex;align-items:center;gap:7px;font:600 14.5px var(--f-body);color:var(--ink);background:none;border:1px solid var(--line);border-radius:999px;padding:6px 12px 6px 9px;cursor:pointer;white-space:nowrap}
+.gnav-ap:hover{background:var(--surface-2)}
+.gnav-ap[aria-expanded="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.gnav-ap:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.gnav-ap svg{width:18px;height:18px;flex:none}
+.ap-back{position:fixed;inset:0;z-index:79;background:transparent}
+.ap{position:fixed;z-index:80;top:calc(var(--gnav) + env(safe-area-inset-top,0px) + 8px);right:max(16px,env(safe-area-inset-right,0px));width:min(380px,calc(100vw - 32px));max-height:calc(100dvh - var(--gnav) - 24px);overflow:auto;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:14px;box-shadow:0 18px 50px rgba(0,0,0,.22);padding:16px;display:grid;gap:14px;font:400 15px/1.45 var(--f-body)}
+.ap-h{display:flex;align-items:center;gap:10px}
+.ap-h h2{font:700 24px/1 var(--f-display);margin:0;flex:1}
+.ap-ok{font:600 14px var(--f-body);background:var(--ink);color:var(--surface);border:0;border-radius:999px;padding:7px 14px;cursor:pointer}
+.ap-lbl{font:600 13px var(--f-body);color:var(--muted)}
+.ap-skins{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ap-skin{display:flex;flex-direction:column;gap:6px;text-align:left;background:var(--surface);color:var(--ink);border:1.5px solid var(--line);border-radius:12px;padding:7px;cursor:pointer;font:inherit}
+.ap-skin[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 1.5px var(--accent)}
+.ap-skin:focus-visible,.ap-seg button:focus-visible,.ap-ok:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.ap-prev{height:62px;border-radius:8px;padding:8px;display:flex;flex-direction:column;justify-content:space-between}
+.ap-prev span{border-radius:5px;padding:5px 7px;display:flex;flex-direction:column;gap:5px}
+.ap-prev b{font:700 17px/1 var(--f-display)}
+.ap-prev i{display:block;height:4px;width:60%;border-radius:2px}
+.ap-nm{font-weight:600;font-size:14px;padding:0 3px}
+.ap-ds{font-size:12px;line-height:1.3;color:var(--muted);padding:0 3px 2px}
+.ap-row{display:flex;align-items:center;gap:10px;justify-content:space-between}
+.ap-seg{display:inline-flex;background:var(--surface-2);border:1px solid var(--line);border-radius:999px;padding:3px}
+.ap-seg button{font:600 13.5px var(--f-body);color:var(--ink);background:none;border:0;border-radius:999px;padding:6px 12px;cursor:pointer}
+.ap-seg button[aria-pressed="true"]{background:var(--ink);color:var(--surface)}
+.ap-note{margin:0;font-size:13px;color:var(--muted)}
+.ap-dots{text-decoration:underline dotted;text-decoration-color:var(--accent);text-underline-offset:3px}
+/* volver arriba */
+.to-top{position:fixed;z-index:25;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:600 20px/1 var(--f-body);box-shadow:0 4px 14px rgba(0,0,0,.18);cursor:pointer}
+.to-top:hover{background:var(--surface-2)}
+.to-top:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media (max-width:600px){
+  .gnav-ap{padding:8px;border-radius:50%} .gnav-ap span{display:none}
+  .ap{top:auto;bottom:0;left:0;right:0;width:auto;max-height:85dvh;border-radius:16px 16px 0 0;padding:16px max(16px,env(safe-area-inset-left,0px)) calc(16px + env(safe-area-inset-bottom,0px))}
+  .ap-back{background:rgba(0,0,0,.35)}
+}
+/* ayudas apagadas */
+html[data-ayudas="no"] .tt-hint{display:none}
 </style>
 <style type="text/x-scope" data-scope="#v-glos">
 /* Layout: una columna de lectura tipo cuaderno técnico; cada concepto = explicación + plano dibujado + ejemplo de los apuntes */
@@ -707,16 +812,79 @@ details.leer[open] summary{margin-bottom:6px}
       <a href="#formulas" data-v="form">Fórmulas</a>
       <a href="#L1" data-v="ent">Entrenador</a>
     </nav>
+    <button type="button" class="gnav-ap" id="ap-btn" aria-haspopup="dialog" aria-controls="ap" aria-expanded="false" title="Apariencia: estilo, modo y ayudas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18c1.1 0 1.8-.8 1.8-1.7 0-.5-.2-.9-.5-1.2-.3-.3-.5-.7-.5-1.2 0-1 .8-1.8 1.8-1.8H17a4 4 0 0 0 4-4C21 6.6 17 3 12 3z"/><circle cx="7.5" cy="11.5" r="1.2"/><circle cx="10.5" cy="7.5" r="1.2"/><circle cx="15.5" cy="8" r="1.2"/></svg><span>Apariencia</span></button>
   </div>
 </header>
+<div class="ap-back" id="ap-back" hidden></div>
+<div class="ap" id="ap" role="dialog" aria-labelledby="ap-t" tabindex="-1" hidden>
+  <div class="ap-h"><h2 id="ap-t">Apariencia</h2><button type="button" class="ap-ok" id="ap-ok">Listo</button></div>
+  <div class="ap-lbl">Estilo</div>
+  <div class="ap-skins" id="ap-skins" role="group" aria-label="Estilo"></div>
+  <div class="ap-row"><span class="ap-lbl">Modo</span><div class="ap-seg" role="group" aria-label="Modo"><button type="button" data-modo="sistema">Sistema</button><button type="button" data-modo="claro">Claro</button><button type="button" data-modo="oscuro">Oscuro</button></div></div>
+  <div class="ap-row"><span class="ap-lbl">Ayudas</span><div class="ap-seg" role="group" aria-label="Ayudas"><button type="button" data-ayudas="si">Sí</button><button type="button" data-ayudas="no">No</button></div></div>
+  <p class="ap-note">Con las ayudas encendidas, las palabras y letras con <span class="ap-dots">subrayado punteado</span> muestran qué significan: pasá el mouse o tocalas.</p>
+  <p class="ap-note">Se guarda en este dispositivo.</p>
+</div>
+<button type="button" class="to-top" id="to-top" aria-label="Volver arriba" title="Volver arriba" hidden>↑</button>
+<script>
+/* Apariencia: estilo × modo × ayudas, guardado en este dispositivo. Los colores de las vistas previas son los mismos del CSS de la cabecera. */
+(() => {
+  const K = 'estructuras-apariencia-v1', r = document.documentElement, dark = matchMedia('(prefers-color-scheme: dark)');
+  const SKINS = [
+    { id: 'hormigon', nm: 'Hormigón', ds: 'El de siempre: gris claro y azul.', c: ['#eef1f3', '#ffffff', '#1b2125', '#1e5ea6'], o: ['#0f1316', '#161b20', '#e3e8eb', '#79b0f2'] },
+    { id: 'papel', nm: 'Papel', ds: 'Crema y sepia: cansa menos en lecturas largas.', c: ['#f4efe5', '#fffbf3', '#2b2118', '#8a4b1f'], o: ['#1c1712', '#251f19', '#eee3d1', '#e0a96d'] },
+    { id: 'pizarra', nm: 'Pizarra', ds: 'Azul pizarra, contraste suave para la noche.', c: ['#e8edf2', '#f8fafc', '#1d2733', '#2c6c8c'], o: ['#151e28', '#1b2631', '#d5dfe9', '#7cc4e4'] },
+    { id: 'contraste', nm: 'Alto contraste', ds: 'Blanco y negro puros, para mucho sol o vista cansada.', c: ['#ffffff', '#ffffff', '#000000', '#0037b3'], o: ['#000000', '#000000', '#ffffff', '#ffd60a'] }
+  ];
+  let S = { skin: 'hormigon', modo: 'sistema', ayudas: 'si' };
+  try { S = Object.assign(S, JSON.parse(localStorage.getItem(K)) || {}); } catch (e) {}
+  const oscuro = () => S.modo === 'oscuro' || (S.modo === 'sistema' && dark.matches);
+  const aplicar = () => {
+    S.skin === 'hormigon' ? r.removeAttribute('data-skin') : r.setAttribute('data-skin', S.skin);
+    if (S.modo === 'claro') r.setAttribute('data-theme', 'light'); else if (S.modo === 'oscuro') r.setAttribute('data-theme', 'dark'); else r.removeAttribute('data-theme');
+    S.ayudas === 'no' ? r.setAttribute('data-ayudas', 'no') : r.removeAttribute('data-ayudas');
+    try { localStorage.setItem(K, JSON.stringify(S)); } catch (e) {}
+  };
+  const pintar = () => {
+    const os = oscuro();
+    document.getElementById('ap-skins').innerHTML = SKINS.map(k => { const [bg, sf, ink, ac] = os ? k.o : k.c; return `<button type="button" class="ap-skin" data-skin="${k.id}" aria-pressed="${S.skin === k.id}"><span class="ap-prev" style="background:${bg}"><span style="background:${sf}"><b style="color:${ink}">Losa L4</b><i style="background:${ac}"></i></span></span><span class="ap-nm">${k.nm}</span><span class="ap-ds">${k.ds}</span></button>`; }).join('');
+    document.querySelectorAll('#ap [data-modo]').forEach(b => b.setAttribute('aria-pressed', b.dataset.modo === S.modo));
+    document.querySelectorAll('#ap [data-ayudas]').forEach(b => b.setAttribute('aria-pressed', b.dataset.ayudas === S.ayudas));
+  };
+  const ap = document.getElementById('ap'), back = document.getElementById('ap-back'), btn = document.getElementById('ap-btn');
+  const abrir = () => { pintar(); ap.hidden = back.hidden = false; btn.setAttribute('aria-expanded', 'true'); (ap.querySelector('.ap-skin[aria-pressed="true"]') || ap).focus(); };
+  const cerrar = () => { if (ap.hidden) return; ap.hidden = back.hidden = true; btn.setAttribute('aria-expanded', 'false'); btn.focus(); };
+  btn.addEventListener('click', () => ap.hidden ? abrir() : cerrar());
+  back.addEventListener('click', cerrar);
+  document.getElementById('ap-ok').addEventListener('click', cerrar);
+  addEventListener('keydown', e => { if (e.key === 'Escape') cerrar(); });
+  ap.addEventListener('click', e => {
+    /* solo botones: la raíz de la página también lleva data-skin y data-ayudas */
+    const k = e.target.closest('button.ap-skin'), m = e.target.closest('button[data-modo]'), y = e.target.closest('button[data-ayudas]');
+    if (k) S.skin = k.dataset.skin; else if (m) S.modo = m.dataset.modo; else if (y) S.ayudas = y.dataset.ayudas; else return;
+    aplicar(); pintar();
+  });
+  dark.addEventListener('change', () => { if (!ap.hidden) pintar(); });
+  aplicar();
+  /* volver arriba: aparece después de bajar una pantalla y media */
+  const tt = document.getElementById('to-top');
+  const ver = () => { tt.hidden = scrollY < innerHeight * 1.5; };
+  addEventListener('scroll', ver, { passive: true }); addEventListener('resize', ver);
+  tt.addEventListener('click', () => scrollTo({ top: 0, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }));
+})();
+</script>
 <script>
 /* Qué sección se ve según el enlace (#...). Se registra antes que las secciones para correr primero. */
 (() => {
   const IDS = { glos: 'v-glos', form: 'v-form', guia: 'v-guia', ent: 'v-ent', tres: 'v-3d' };
   const which = h => /^(formulas|f-[a-z0-9-]+)$/.test(h) ? 'form' : /^(mapa|parte-[1-6])$/.test(h) ? 'guia' : /^(planta|placa|muros)$/.test(h) ? 'tres' : /^(L[1-7]|LE)$/.test(h) ? 'ent' : 'glos';
   let cur = null;
+  /* al volver a abrir sin enlace, sigue donde quedó (en este dispositivo) */
+  const KU = 'estructuras-ultima-v1';
+  try { const u = localStorage.getItem(KU); if (!location.hash && u && /^#[A-Za-z0-9-]+$/.test(u)) history.replaceState(null, '', u); } catch (e) {}
   window.__view = () => {
     const h = location.hash.slice(1), v = which(h);
+    try { if (h) localStorage.setItem(KU, '#' + h); } catch (e) {}
     if (v !== cur) {
       cur = v;
       for (const [k, id] of Object.entries(IDS)) { const el = document.getElementById(id); if (el) el.hidden = k !== v; }
@@ -1509,7 +1677,7 @@ const themed = [], themeHooks = [];
 function tm(target, token, prop = 'color') { themed.push([target, token, prop]); target[prop].set(tok(token)); return target; }
 function applyTheme() { for (const [t, k, p] of themed) t[p].set(tok(k)); themeHooks.forEach(f => f()); }
 darkMQ.addEventListener('change', applyTheme);
-new MutationObserver(applyTheme).observe(D.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+new MutationObserver(applyTheme).observe(D.documentElement, { attributes: true, attributeFilter: ['data-theme', 'data-skin'] });
 
 const std = (token, o = {}) => tm(new THREE.MeshStandardMaterial(Object.assign({ roughness: .9, metalness: 0 }, o)), token);
 const basic = (token, o = {}) => tm(new THREE.MeshBasicMaterial(o), token);
@@ -4820,7 +4988,7 @@ drawPlan(); render();
 
 </div>
 <script>window.__view();</script>
-<script>window.TT_CONF = { roots: ["#v-glos .wrap", "#v-form #formulas", "#v-guia main.wrap", "#v-ent main.steps", "#v-ent .plan-card", "#v-3d #panel", "#v-3d #legend"], exclude: "#gloss, #v-form .indice, #f-buscar", hint: "#v-glos header p.lede:last-of-type, #v-form header p.lede, #v-guia #mapa .lede, #v-ent .lhead .lede, #v-3d .pane > .ph" };</script>
+<script>window.TT_CONF = { roots: ["#v-glos .wrap", "#v-form #formulas", "#v-guia main.wrap", "#v-ent main.steps", "#v-ent .plan-card", "#v-3d #panel", "#v-3d #legend"], exclude: "#gloss, #v-form .indice, #f-buscar" };</script>
 <script>
 /* ===== Explicaciones emergentes: letras y palabras técnicas ===== */
 (() => {
@@ -4989,7 +5157,7 @@ drawPlan(); render();
   const WORD_RE = new RegExp(`(?<![\\p{L}])(?:${WORDS.map(w => w[0]).join('|')})(?![\\p{L}])`, 'giu');
   const EXCL = 'a,button,select,option,input,textarea,script,style,svg,h1,h2,nav,header,.tt,.lbl,.chip,.badge,.eyebrow,.pill,.lab,.sec-tag,[data-nott]' + (CONF.exclude ? ',' + CONF.exclude : '');
   const MATH = '.mono,.formula,.calc,pre,.n,td.r,.f label,table.res td,table.res th,.kv dd';
-  const CONT = '.blk,.ex,.card,.step,.callout,figure,.plan-card,.given,.pane,details,section,.box,main';
+  const CONT = '.blk,.ex,.card,.step,.callout,figure,.plan-card,.given,.pane,details,article,section,.box,main';
   const SEEN = new WeakMap();
   const isEq = (t, i, n) => { let j = i + n; while (t[j] === ' ') j++; let k = i - 1; while (t[k] === ' ') k--; return /[=≈<>≤≥/×·)]/.test(t[j] || '') || /[=×/·(+−-]/.test(t[k] || ''); };
   function wrapNode(node) {
@@ -5001,6 +5169,7 @@ drawPlan(); render();
       const s = SYMMAP.get(m[0]); if (!s) continue;
       if (s[3] === 1 && !math && !isEq(text, m.index, m[0].length)) continue;
       if (s[3] === 2) { if (!(math || isEq(text, m.index, 1))) continue; const before = text.slice(0, m.index); if (/\d[\d,.]*\s*$/.test(before)) continue; }
+      const sk = 's:' + m[0]; if (seen.has(sk)) continue; seen.add(sk); /* cada letra, una sola vez por sección */
       hits.push({ i: m.index, n: m[0].length, t: s[1], d: s[2] });
     }
     for (const m of text.matchAll(WORD_RE)) {
@@ -5030,8 +5199,10 @@ drawPlan(); render();
   }
   /* estilos */
   const st = document.createElement('style');
-  st.textContent = `.tt{text-decoration:underline dotted;text-decoration-color:var(--accent);text-decoration-thickness:1.5px;text-underline-offset:3px;cursor:help;border-radius:2px}
-.tt:hover,.tt.on{background:var(--accent-soft)}
+  st.textContent = `.tt{text-decoration:underline dotted;text-decoration-color:var(--accent);text-decoration-color:color-mix(in srgb,var(--accent) 55%,transparent);text-decoration-thickness:1px;text-underline-offset:3px;cursor:help;border-radius:2px}
+.tt:hover,.tt.on{background:var(--accent-soft);text-decoration-color:var(--accent)}
+html[data-ayudas="no"] .tt{text-decoration:none;cursor:inherit}
+html[data-ayudas="no"] .tt:hover{background:none}
 .tt:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 #tt-pop{position:fixed;z-index:1000;left:0;top:0;width:max-content;max-width:min(300px,calc(100vw - 24px));background:var(--surface);color:var(--ink);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:6px;padding:9px 12px;font:400 13.5px/1.45 var(--f-body);box-shadow:0 8px 28px rgba(0,0,0,.2);pointer-events:none;text-align:left;letter-spacing:0;text-transform:none}
 #tt-pop b{display:block;font:600 12.5px var(--f-mono);color:var(--accent);margin-bottom:3px}
@@ -5047,6 +5218,7 @@ drawPlan(); render();
     pop.style.transform = `translate(${Math.round(left)}px,${Math.round(top)}px)`;
   }
   function show(el) {
+    if (document.documentElement.getAttribute('data-ayudas') === 'no') return;
     if (cur && cur !== el) cur.classList.remove('on');
     cur = el; el.classList.add('on');
     pop.innerHTML = `<b></b><span></span>`; pop.firstChild.textContent = el.dataset.t; pop.lastChild.textContent = el.dataset.d;
