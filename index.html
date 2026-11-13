@@ -693,7 +693,14 @@ table.res td.r{text-align:right;font-family:var(--f-mono);white-space:nowrap}
 table.res.nu th{text-transform:none;font-size:12px;letter-spacing:0}
 table.res tr.usada td{background:var(--accent-soft);font-weight:700}
 table.res tr:last-child td{border-bottom:none}
-.tblw{overflow-x:auto;border:1px solid var(--line);border-radius:6px;background:var(--surface)}
+.tblw{overflow-x:auto;border:1px solid var(--line);border-radius:6px;background:var(--surface);background:linear-gradient(to right,var(--surface) 30%,transparent) left center/28px 100% no-repeat local,linear-gradient(to left,var(--surface) 30%,transparent) right center/28px 100% no-repeat local,radial-gradient(farthest-side at 0 50%,color-mix(in srgb,var(--ink) 30%,transparent),transparent) left center/12px 100% no-repeat scroll,radial-gradient(farthest-side at 100% 50%,color-mix(in srgb,var(--ink) 30%,transparent),transparent) right center/12px 100% no-repeat scroll,var(--surface)} /* sombra en el borde: avisa que la tabla sigue de costado */
+.cargas{border:1px solid var(--line);border-radius:8px;background:var(--surface);font-size:14px;font-variant-numeric:tabular-nums;overflow:hidden}
+.cg{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 12px;align-items:baseline;padding:8px 10px;border-top:1px solid var(--line)}
+.cg:first-child{border-top:0}
+.cg-h{font:600 11px var(--f-mono);letter-spacing:.05em;text-transform:uppercase;color:var(--muted);padding:6px 10px}
+.cg-v{font-family:var(--f-mono);font-weight:600;text-align:right;white-space:nowrap}
+.cg-c{grid-column:1 / -1;font-size:12.5px;line-height:1.45;color:var(--muted);overflow-wrap:anywhere}
+.cg-t{background:var(--surface-2)}
 svg.sch{width:100%;max-width:300px;height:auto;display:block}
 .sch-slab{fill:var(--accent-soft);stroke:none}
 .sch-txt{fill:var(--muted);font:500 11px var(--f-mono)}
@@ -2275,8 +2282,9 @@ const LEER = `<details class="leer"><summary>Cómo leer este dibujo</summary><ul
   <li><b>Los números del corte.</b> El de cada extremo de un tramo es el corte ahí: al empezar, la reacción de ese apoyo; al terminar, menos la reacción. En un apoyo del medio el corte salta de un número negativo a uno positivo: el salto (los dos sin signo, sumados) es la reacción de ese apoyo, lo que la pieza le pasa a la que la sostiene; abajo del dibujo está la cuenta.</li>
   <li><b>M, el momento.</b> Cuánto se dobla la pieza en cada punto. Se dibuja del lado que se estira: hacia abajo en el medio de los tramos (se estira abajo, el hierro va abajo) y hacia arriba sobre un apoyo continuo o en un voladizo (se estira arriba, el hierro va arriba). Al que se estira arriba se le pone signo menos. Los números marcan los máximos, en tm: en el medio del tramo, el máximo positivo (donde V = 0); sobre un apoyo continuo o en un empotramiento, el negativo. Ojo: el positivo se dibuja hacia abajo, al revés que en un gráfico común.</li>
 </ul></details>`;
+/* lista de cargas: arriba el nombre y el valor; abajo, a lo ancho, la cuenta (en el panel angosto una tabla de 3 columnas no entraba) */
 function tablaCargas(rows, unidad) {
-  return `<div class="tblw"><table class="res"><thead><tr><th>Carga</th><th>Cuenta</th><th style="text-align:right">${unidad}</th></tr></thead><tbody>${rows.map(r => `<tr><td>${r[0]}</td><td class="mono">${r[1]}</td><td class="r">${r[2]}</td></tr>`).join('')}</tbody></table></div>`;
+  return `<div class="cargas" role="table" aria-label="Cargas"><div class="cg cg-h" role="row"><span role="columnheader">Carga y cuenta</span><span role="columnheader">${unidad}</span></div>${rows.map(r => `<div class="cg${/^<b>/.test(r[0]) ? ' cg-t' : ''}" role="row"><span class="cg-n" role="cell">${r[0]}</span><span class="cg-v" role="cell">${r[2]}</span>${r[1] ? `<span class="cg-c mono" role="cell">${r[1]}</span>` : ''}</div>`).join('')}</div>`;
 }
 const srcLink = t => t.replace(/\b(L[1-7]|LE[12]|V\d+|M\d+)\b/g, m => GEO.SLABS[m] || GEO.BEAMS[m] ? irA(m) : m);
 /* Tabla 4 entera, para que se vea de dónde sale cada coeficiente */
