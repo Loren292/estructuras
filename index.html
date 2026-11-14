@@ -909,6 +909,23 @@ details.leer > * + *{margin-top:8px}
 .muros td.r{text-align:right;font-family:var(--f-mono);white-space:nowrap}
 .muros .acc{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
 .muros .x{font:600 13px var(--f-body);background:none;border:1px solid var(--line);border-radius:6px;color:var(--hard);padding:3px 8px;cursor:pointer}
+.intro{border-left:4px solid var(--accent);background:var(--accent-soft);border-radius:8px;padding:10px 14px;font-size:15px}
+.intro > * + *{margin-top:6px}
+.repaso{font-size:14px;color:var(--muted)}
+.repaso a{color:var(--accent);font-weight:600}
+.dibus{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;align-items:start}
+.dibus figure{margin:0}
+.dibus svg.diag{max-width:440px;margin:0 auto}
+.dibus figcaption{font-size:13px;color:var(--muted);margin-top:4px}
+.d-con{fill:var(--slab);stroke:var(--ink);stroke-width:1.4}
+.d-col{fill:var(--surface);stroke:var(--ink);stroke-width:1.6}
+.d-dash{fill:none;stroke:var(--muted);stroke-width:1.1;stroke-dasharray:4 3}
+.d-fe{stroke:var(--rebar);stroke-width:2.6}
+.d-feb{fill:var(--rebar)}
+.d-arr{stroke:var(--accent);stroke-width:1.6}
+.d-arrh{fill:var(--accent)}
+.d-N{fill:var(--rebar);fill-opacity:.18;stroke:var(--rebar);stroke-width:1.4}
+.d-ground{stroke:var(--muted);stroke-width:1.2}
 ul.sup{margin:0;padding-left:20px;display:grid;gap:6px;font-size:15px}
 @media (max-width:600px){ .tp{padding:16px 12px 48px} .tp section{padding:14px 12px} .tp h1{font-size:28px} }
 </style>
@@ -5696,7 +5713,7 @@ function vigaSVG(b) {
   let stack = {}; qs.forEach(u => { const k = `${nf(u.x1)}-${nf(u.x2)}`; const base = stack[k] || 0, hh = 6 + 30 * u.q / qmax / Math.max(1, qs.length / 2); s += `<rect class="d-q" x="${X(u.x1)}" y="${yb - 6 - base - hh}" width="${(u.x2 - u.x1) * sx}" height="${hh}"><title>${u.name}: ${f3(u.q)} t/m</title></rect>`; stack[k] = base + hh; });
   for (const p of b.P) s += `<line class="d-P" x1="${X(p.a)}" y1="${yb - 52}" x2="${X(p.a)}" y2="${yb - 8}"/><path class="d-Ph" d="M${X(p.a) - 5},${yb - 12} L${X(p.a) + 5},${yb - 12} L${X(p.a)},${yb - 4} Z"/><text class="d-t" x="${X(p.a) + 4}" y="${yb - 44}">${p.name} ${f3(p.P)} t</text>`;
   s += `<line class="d-beam" x1="${X(0)}" y1="${yb}" x2="${X(r.L)}" y2="${yb}"/>`;
-  r.ss.forEach((ss, k) => { s += `<path class="d-sup" d="M${X(ss)},${yb + 2} l-8,12 h16 z"/><text class="d-t2" x="${X(ss)}" y="${yb + 26}" text-anchor="middle">${b.sup[k][1]} · R ${f3(r.R[k])} t</text>`; });
+  r.ss.forEach((ss, k) => { s += `<path class="d-sup" d="M${X(ss)},${yb + 2} l-8,12 h16 z"/><text class="d-t2" x="${X(ss)}" y="${yb + 26}" text-anchor="${ss < 1e-6 ? 'start' : ss > r.L - 1e-6 ? 'end' : 'middle'}">${b.sup[k][1]} · R ${f3(r.R[k])} t</text>`; });
   /* V (positivo arriba) */
   const pV = r.xs.map((x, i) => `${X(x).toFixed(1)},${(yV - r.V[i] / Vmax * hV).toFixed(1)}`).join(' L');
   s += `<line class="d-ax" x1="${X(0)}" y1="${yV}" x2="${X(r.L)}" y2="${yV}"/><path class="d-V" d="M${X(0)},${yV} L${pV} L${X(r.L)},${yV} Z"/>`;
@@ -5724,6 +5741,64 @@ RAIZ.addEventListener('change', e => {
   else { const v = parseFloat(el.value); if (!isFinite(v) || v < +el.min || v > +el.max) { el.value = (T[id] || {})[c] || ''; return; } (T[id] = T[id] || {})[c] = v; }
   guardar(); dibujar();
 });
+/* ---------- explicación: introducción, repaso en Fórmulas y dibujos ---------- */
+const enUnica = () => !!D.getElementById('v-form');
+const repaso = l => enUnica() ? `<p class="repaso">Para repasar en Fórmulas: ${l.map(([h, t]) => `<a href="#${h}">${t}</a>`).join(' · ')}.</p>` : '';
+const INTRO = {
+  viga: `<div class="intro"><p><b>Qué es.</b> La viga recibe las losas que apoyan en ella (y los muros que tenga encima) y lleva esa carga a las columnas, o a otra viga si apoya en ella. Se calcula como una barra horizontal, en este orden:</p>
+    <p>1) qué carga recibe y de dónde sale; 2) cómo se reparte entre sus apoyos (las <b>reacciones</b>, que después cargan a las columnas); 3) dónde se dobla más (el <b>momento</b>: abajo en el medio, arriba sobre un apoyo continuo o un voladizo) y con eso cuánto hierro lleva; 4) cuánto se corta cerca de los apoyos (el <b>corte</b>) y con eso los estribos.</p></div>`,
+  col: `<div class="intro"><p><b>Qué es.</b> La columna es la pieza vertical que junta lo que le pasan las vigas de cada piso y lo baja hasta la base. Está <b>comprimida</b>: la aprietan a lo largo. Por eso la carga crece hacia abajo: la columna de planta baja lleva su piso más todo lo de arriba.</p>
+    <p>Se cuidan dos cosas. Que no se aplaste: el hormigón y las barras juntos tienen que aguantar la carga agrandada por un coeficiente de seguridad (ν = 2,1). Y que no se <b>pandee</b>: si es alta y fina, se dobla de costado antes de aplastarse; para eso la carga se agranda otra vez con ω, que sale de la <b>esbeltez</b> λ = altura / lado (Tabla 7).</p></div>`,
+  base: `<div class="intro"><p><b>Qué es.</b> La base es el pie ensanchado y enterrado de la columna. El suelo aguanta mucho menos que el hormigón (la tosca, unos 2 kg/cm², contra 140 o más del hormigón): por eso hay que repartir la carga en una superficie grande. Se controlan tres cosas:</p>
+    <p>1) <b>Superficie</b>: que el suelo no reciba más de lo que aguanta. 2) <b>Punzonado</b>: que la columna no perfore la base como un sacabocados; se evita con altura. 3) <b>Flexión</b>: el suelo empuja hacia arriba y cada ala de la base se dobla como una ménsula alrededor de la columna; tracciona abajo, así que el hierro va abajo, en una parrilla en las dos direcciones.</p></div>`,
+  losa: `<div class="intro"><p><b>Qué es.</b> La losa es la placa que recibe el piso, los muebles y la gente. Acá interesa qué parte de su carga le pasa a cada viga de sus bordes. Si es de una dirección, se reparte mitad y mitad entre los dos bordes largos; si es cruzada, con los coeficientes de reacción de las Tablas 3.x; si es un voladizo, toda va al borde empotrado.</p></div>`
+};
+function columnaSVG(c) {
+  const W = 510, top = 40, yPA = 46, yPB = 176, yG = 306, x0 = 150, cw = 34, nx = 300, nw = 120;
+  const Nmax = c.PB.N || 1, sx = v => nw * v / Nmax;
+  let s = `<line class="d-ground" x1="40" y1="${yG}" x2="250" y2="${yG}"/><text class="d-t2" x="44" y="${yG + 14}">suelo</text>`;
+  s += `<rect class="d-con" x="${x0 - 38}" y="${yG + 4}" width="${cw + 76}" height="22"/><text class="d-t2" x="${x0 + cw / 2}" y="${yG + 40}" text-anchor="middle">base</text>`;
+  s += `<rect class="d-con" x="${x0 - 70}" y="${yPA - 8}" width="${cw + 140}" height="8"/><rect class="d-con" x="${x0 - 70}" y="${yPB - 8}" width="${cw + 140}" height="8"/>`;
+  s += `<rect class="d-col" x="${x0}" y="${yPA}" width="${cw}" height="${yPB - 8 - yPA}"/><rect class="d-col" x="${x0}" y="${yPB}" width="${cw}" height="${yG + 4 - yPB}"/>`;
+  s += `<text class="d-t2" x="${x0 - 74}" y="${yPA - 12}">losa de PA</text><text class="d-t2" x="${x0 - 74}" y="${yPB - 12}">losa de PB</text>`;
+  const fl = (y, t) => `<line class="d-P" x1="${x0 + cw / 2}" y1="${y - 34}" x2="${x0 + cw / 2}" y2="${y - 12}"/><path class="d-Ph" d="M${x0 + cw / 2 - 5},${y - 16} L${x0 + cw / 2 + 5},${y - 16} L${x0 + cw / 2},${y - 8} Z"/><text class="d-t" x="${x0 + cw / 2 + 8}" y="${y - 24}">${t}</text>`;
+  s += fl(yPA, `vigas ${f3(c.PA.Nvig)} t`) + fl(yPB, `vigas ${f3(c.PB.Nvig)} t`);
+  s += `<text class="d-t2" x="${x0 + cw + 6}" y="${(yPA + yPB) / 2}">${c.PA.b} × ${c.PA.b}</text><text class="d-t2" x="${x0 + cw + 6}" y="${(yPB + yG) / 2}">${c.PB.b} × ${c.PB.b}</text>`;
+  s += `<line class="d-ax" x1="${x0 - 22}" y1="${yPA}" x2="${x0 - 22}" y2="${yPB - 8}"/><text class="d-t2" x="${x0 - 26}" y="${(yPA + yPB) / 2}" text-anchor="end">Sk ${nf(S.hPA)}</text>`;
+  s += `<line class="d-ax" x1="${x0 - 22}" y1="${yPB}" x2="${x0 - 22}" y2="${yG}"/><text class="d-t2" x="${x0 - 26}" y="${(yPB + yG) / 2}" text-anchor="end">Sk ${nf(S.hPB)}</text>`;
+  /* diagrama de N: crece con el peso propio y salta en cada piso */
+  const pA0 = c.PA.Nvig, pA1 = c.PA.N, pB0 = c.PA.N + c.PB.Nvig, pB1 = c.PB.N;
+  s += `<line class="d-ax" x1="${nx}" y1="${yPA - 6}" x2="${nx}" y2="${yG}"/><text class="d-lab" x="${nx - 4}" y="${top - 12}">N</text>`;
+  s += `<path class="d-N" d="M${nx},${yPA} L${nx + sx(pA0)},${yPA} L${nx + sx(pA1)},${yPB - 8} L${nx},${yPB - 8} Z"/><path class="d-N" d="M${nx},${yPB} L${nx + sx(pB0)},${yPB} L${nx + sx(pB1)},${yG} L${nx},${yG} Z"/>`;
+  s += `<text class="d-t" x="${nx + sx(pA1) + 4}" y="${yPB - 12}">${f3(pA1)} t</text><text class="d-t" x="${nx + sx(pB1) + 4}" y="${yG - 4}">${f3(pB1)} t</text>`;
+  return `<figure><svg class="diag" viewBox="0 0 ${W} ${yG + 48}" role="img" aria-label="Columna ${c.id} en sus dos pisos y su esfuerzo normal">${s}</svg><figcaption>A la izquierda, la columna en sus dos pisos: le llegan las vigas en cada losa (flechas) y apoya en la base. Sk es la longitud de pandeo de cada tramo (la altura del piso). A la derecha, el esfuerzo normal N: crece un poco hacia abajo por el peso propio y salta en cada piso, donde llegan más vigas. Abajo llega a la base con ${f3(pB1)} t.</figcaption></figure>`;
+}
+function baseSVG(b) {
+  /* planta */
+  const P = 170, sc = P / Math.max(b.a1, b.a2), A1 = b.a1 * sc, A2 = b.a2 * sc, C = b.c * sc, B1 = b.b1 * sc, B2 = b.b2 * sc, ox = 78, oy = 26;
+  const cx = b.tipo === 'c' ? ox + (A1 - C) / 2 : ox, cy = b.tipo === 'd' ? oy : oy + (A2 - C) / 2;
+  const ex = b.tipo === 'c' ? ox + (A1 - B1) / 2 : ox, ey = b.tipo === 'd' ? oy : oy + (A2 - B2) / 2;
+  let p = `<rect class="d-con" x="${ox}" y="${oy}" width="${A1}" height="${A2}"/><rect class="d-dash" x="${ex}" y="${ey}" width="${B1}" height="${B2}"/><rect class="d-col" x="${cx}" y="${cy}" width="${C}" height="${C}"/>`;
+  for (let k = 1; k < 6; k++) { p += `<line class="d-fe" style="stroke-width:1;opacity:.6" x1="${ox + 4}" y1="${oy + A2 * k / 6}" x2="${ox + A1 - 4}" y2="${oy + A2 * k / 6}"/><line class="d-fe" style="stroke-width:1;opacity:.6" x1="${ox + A1 * k / 6}" y1="${oy + 4}" x2="${ox + A1 * k / 6}" y2="${oy + A2 - 4}"/>`; }
+  p += `<text class="d-t2" x="${ox + A1 / 2}" y="${oy - 8}" text-anchor="middle">a₁ = ${b.a1}</text><text class="d-t2" x="${ox - 6}" y="${oy + A2 / 2}" text-anchor="end">a₂ = ${b.a2}</text>`;
+  if (b.tipo !== 'c') p += `<line class="d-ground" x1="${ox}" y1="${oy - 2}" x2="${ox}" y2="${oy + A2 + 2}" style="stroke-width:3"/><text class="d-t2" x="${ox + 4}" y="${oy + A2 + 14}">${b.tipo === 'd' ? 'medianera y línea municipal' : 'medianera'}</text>`;
+  if (b.tipo === 'd') p += `<line class="d-ground" x1="${ox - 2}" y1="${oy}" x2="${ox + A1 + 2}" y2="${oy}" style="stroke-width:3"/>`;
+  const plan = `<figure><svg class="diag" viewBox="0 0 ${ox + P + 30} ${oy + P + 24}" role="img" aria-label="Planta de la base">${p}</svg><figcaption>Planta: la base (gris), la columna de ${b.c} × ${b.c} (blanca) y su ensanche de apoyo (punteado). Las líneas rojas son la parrilla del fondo, en las dos direcciones.</figcaption></figure>`;
+  /* corte según a₁ */
+  const W = 300, s2 = 220 / b.a1, X = x => 40 + x * s2, d = clamp(b.d * s2 * 1.6, 34, 110), dd = clamp(b.do * s2 * 1.6, 14, d - 6), yb = 200, yt = yb - d;
+  const c0 = b.tipo === 'c' ? (b.a1 - b.c) / 2 : 0, e0 = b.tipo === 'c' ? (b.a1 - b.b1) / 2 : 0, e1 = e0 + b.b1;
+  let q = `<path class="d-con" d="M${X(0)},${yb} L${X(b.a1)},${yb} L${X(b.a1)},${yb - dd} L${X(e1)},${yt} L${X(e0)},${yt} L${X(0)},${b.tipo === 'c' ? yb - dd : yt} Z"/>`;
+  q += `<rect class="d-col" x="${X(c0)}" y="${yt - 70}" width="${b.c * s2}" height="70"/><text class="d-t2" x="${b.tipo === 'c' ? X(c0 + b.c / 2) : X(c0)}" y="${yt - 74}" text-anchor="${b.tipo === 'c' ? 'middle' : 'start'}">columna, N = ${f3(b.Nt)} t</text>`;
+  q += `<line class="d-fe" x1="${X(0) + 5}" y1="${yb - 6}" x2="${X(b.a1) - 5}" y2="${yb - 6}"/>`;
+  for (let k = 0; k < 7; k++) { const x = X(b.a1 * (k + .5) / 7); q += `<line class="d-arr" x1="${x}" y1="${yb + 26}" x2="${x}" y2="${yb + 8}"/><path class="d-arrh" d="M${x - 4},${yb + 11} L${x + 4},${yb + 11} L${x},${yb + 4} Z"/>`; }
+  q += `<text class="d-t2" x="${X(b.a1 / 2)}" y="${yb + 40}" text-anchor="middle">el suelo empuja hacia arriba</text>`;
+  q += `<line class="d-dash" x1="${X(c0)}" y1="${yt}" x2="${X(c0)}" y2="${yb - 6}"/><line class="d-dash" x1="${X(c0 + b.c)}" y1="${yt}" x2="${X(c0 + b.c)}" y2="${yb - 6}"/><text class="d-t2" x="${X(c0 + b.c) + 4}" y="${yt + 14}">τp</text>`;
+  const m0 = b.tipo === 'c' ? e1 : e1, m1 = b.a1;
+  q += `<line class="d-ax" x1="${X(m0)}" y1="${yt - 10}" x2="${X(m1)}" y2="${yt - 10}"/><text class="d-t2" x="${X((m0 + m1) / 2)}" y="${yt - 14}" text-anchor="middle">ménsula</text>`;
+  q += `<line class="d-ax" x1="${X(b.a1) + 10}" y1="${yt}" x2="${X(b.a1) + 10}" y2="${yb}"/><text class="d-t2" x="${X(b.a1) + 14}" y="${(yt + yb) / 2}">d ${b.d}</text><text class="d-t2" x="${X(b.a1) + 14}" y="${yb - dd / 2 + 10}">d₀ ${nf(b.do, 0)}</text>`;
+  const corte = `<figure><svg class="diag" viewBox="0 0 ${W + 40} ${yb + 48}" role="img" aria-label="Corte de la base">${q}</svg><figcaption>Corte: la columna apoya en la base, el suelo empuja hacia arriba y cada ala se dobla como una ménsula, así que tracciona abajo, donde va la parrilla (rojo). Las líneas punteadas marcan dónde se verifica el punzonado: la superficie de la columna metida en la base. El borde baja hasta d₀ para ahorrar hormigón.</figcaption></figure>`;
+  return `<div class="dibus">${plan}${corte}</div>`;
+}
 /* ---------- fichas ---------- */
 const irA = id => `<a href="#tp-${id}" data-ir="${id}">${id}</a>`;
 function fichaViga(R, b) {
@@ -5742,6 +5817,7 @@ function fichaViga(R, b) {
   const cad2 = b.cad ? `<li><b>Momento sobre ${b.cad.col}</b> (método aproximado de la clase para dos tramos continuos): cada tramo se toma empotrado en ${b.cad.col} y apoyado en la otra punta, <span class="mono">M = q L² / 8</span> (+ las puntuales); el del apoyo es el promedio. ${irA(b.cad.A)}: q equivalente ${f3(b.cad.fA.qeq)} t/m → ${f3(b.cad.fA.M)} tm; ${irA(b.cad.B)}: ${f3(b.cad.fB.qeq)} t/m → ${f3(b.cad.fB.M)} tm. <span class="mono">M apoyo = (${f3(b.cad.fA.M)} + ${f3(b.cad.fB.M)}) / 2 = −${f3(b.cad.Map)} tm</span>. Con ese momento en el apoyo, cada tramo se resuelve con sus cargas reales.</li>` : '';
   const crt = b.corte;
   return `<div class="head"><h2>Viga ${b.id}</h2><span class="chip">${lvTxt}</span>${b.supuesta ? '<span class="chip">no está en el TP</span>' : ''}</div>
+    ${INTRO.viga}${repaso([['f-estatica', 'estática (reacciones y momentos)'], ['f-vigas', 'tamaño y carga de la viga'], ['f-continuas', 'vigas continuas'], ['f-tabla4', 'kh y Tabla 4'], ['f-hierro', 'barras'], ['f-corte', 'corte'], ['f-cruzadas', 'carga de una losa cruzada']])}
     ${b.supuesta ? `<p class="ojo">El TP no dibuja esta viga, pero L2 es de una dirección con luz 2,10 m (de x = 1,10 a V11) y su borde izquierdo, junto a la escalera, tiene que apoyar en algo. Se supone una viga de 1,10 a 1,10 entre ${irA('V2')} y ${irA('V4')}. Consultalo en clase: si va un muro o la losa se resuelve de otra forma, cambian V2, V4 y las columnas C3, C4, C6 y C7.</p>` : ''}
     <div class="resumen"><b>Resultado</b><ul>
       <li>Sección b₀ × d₀ = ${sec.b0} × ${sec.d0} cm (h = ${sec.h} cm)${sec.fijoB || sec.fijoD ? ', elegida en los datos' : ''}.</li>
@@ -5787,12 +5863,14 @@ function fichaCol(R, c) {
   const fx = S.colb[c.id] || {};
   return `<div class="head"><h2>Columna ${c.id}</h2><span class="chip">${S.horm}</span></div>
     ${avisoHTML([...c.PA.avisos.map(a => 'PA: ' + a), ...c.PB.avisos.map(a => 'PB: ' + a)])}
+    ${INTRO.col}${repaso([['f-columnas', 'carga que baja por una columna'], ['f-unidades', 'unidades']])}
     <div class="resumen"><b>Resultado</b><ul>
       <li>Planta alta: ${c.PA.b} × ${c.PA.b} cm, ${barCol(c.PA)}${c.PA.estr ? `, estribos Ø${c.PA.estr.d} c/${c.PA.estr.s}` : ''}; N = ${f3(c.PA.N)} t.</li>
       <li>Planta baja: ${c.PB.b} × ${c.PB.b} cm, ${barCol(c.PB)}${c.PB.estr ? `, estribos Ø${c.PB.estr.d} c/${c.PB.estr.s}` : ''}; N = ${f3(c.PB.N)} t.</li>
       <li>A la base ${irA('B' + c.id.slice(1))} baja <b>${f3(c.N)} t</b>.</li></ul></div>
     ${medidasCaja('Cambiar el lado de la columna', medidaIn('colb', c.id, 'PA', fx.PA, c.PA.bAuto, [15, 80], 'Lado en PA (cm)') + medidaIn('colb', c.id, 'PB', fx.PB, Math.max(c.PB.bAuto, c.PA.b), [15, 80], 'Lado en PB (cm)'), 'Columna cuadrada de ese lado. Cambia su peso propio, la esbeltez y la armadura, y la base de abajo.')}
     <p>La columna junta lo que le pasan las vigas que llegan a ella, su peso propio y lo que baja del piso de arriba (apunte, pág. 20). Se calcula de arriba hacia abajo. Método ω: <span class="mono">N × ν × ω = Fb × βR + fe × βs</span>, con ν = 2,1, βR = ${H.bR} kg/cm² (${S.horm}) y βs = 4200 kg/cm² (apunte, págs. 22 y 23).</p>
+    <div class="dibus">${columnaSVG(c)}</div>
     ${bloque('PA', c.PA)}${bloque('PB', c.PB)}
     <p class="fine">Compresión centrada: no incluye el momento que le pasarían una base excéntrica o las vigas que apoyan de un solo lado. Si su base es excéntrica, la columna trabaja a flexión compuesta y se dimensiona con el ábaco de la Tabla 10 (apunte, pág. 78), que este cálculo no hace.</p>`;
 }
@@ -5801,6 +5879,7 @@ function fichaBase(R, id) {
   const M1t = b.tipo === 'c' ? '/ (8 a₁)' : '/ (2 a₁)', M2t = b.tipo === 'd' ? '/ (2 a₂)' : '/ (8 a₂)';
   const pcT = b.tipo === 'c' ? `2 c₁ + 2 c₂ = 4 × ${b.c}` : b.tipo === 'e' ? `2 c₁ + c₂ = 3 × ${b.c}` : `c₁ + c₂ = 2 × ${b.c}`;
   return `<div class="head"><h2>Base ${id}</h2><span class="chip">${tipoTxt[b.tipo]}</span><span class="chip">bajo ${cid}</span></div>
+    ${INTRO.base}${repaso([['f-tabla4', 'kh y Tabla 4'], ['f-hierro', 'barras'], ['f-unidades', 'unidades']])}
     <div class="resumen"><b>Resultado</b><ul>
       <li>Planta ${b.a1} × ${b.a2} cm; d = ${b.d} cm (h = ${b.h} cm), d₀ = ${nf(b.do, 0)} cm en el borde.</li>
       <li>Parrilla: según a₁ ${b.bar1 ? `${b.bar1.n} Ø${b.bar1.d} c/${nf(b.bar1.sep, 0)} cm (fe₁ ${nf(b.f1.fe)} cm²)` : '—'}; según a₂ ${b.bar2 ? `${b.bar2.n} Ø${b.bar2.d} c/${nf(b.bar2.sep, 0)} cm (fe₂ ${nf(b.f2.fe)} cm²)` : '—'}.</li>
@@ -5808,12 +5887,13 @@ function fichaBase(R, id) {
     ${avisoHTML(b.avisos)}
     ${medidasCaja('Cambiar las medidas de la base', medidaIn('basm', cid, 'a1', (S.basm[cid] || {}).a1, b.a1a, [30, 600], 'a₁ (cm)') + medidaIn('basm', cid, 'a2', (S.basm[cid] || {}).a2, b.a2a, [30, 600], 'a₂ (cm)') + medidaIn('basm', cid, 'd', (S.basm[cid] || {}).d, b.dAuto, [15, 200], 'd (cm)'), `En la centrada y la doble excéntrica, si ponés solo a₁, a₂ toma el mismo valor.`)}
     <p>Tipo: <label>${selBase(cid)}</label> <span class="fine">Centrada si la columna puede quedar en el medio de la base; excéntrica si está contra una medianera o la línea municipal; doblemente excéntrica en la esquina de las dos (apunte, pág. 31). El TP no dice dónde están las medianeras: elegilo vos.</span></p>
+    ${baseSVG(b)}
     <ol class="steps">
       <li><b>Carga</b>: la de ${irA(cid)} al pie, N = ${f3(b.Nt)} t = ${nf(N, 0)} kg.</li>
       <li><b>Superficie</b> (pág. 32): el peso de la base y del relleno se toma como el 10 % de N. <span class="mono">S = 1,1 N / σs = 1,1 × ${nf(N, 0)} / ${nf(S.sig)} = ${nf(b.S, 0)} cm²</span>.
         ${b.tipo === 'e' ? `Con a₂ = 2,5 a₁ (pág. 35, para achicar el momento): <span class="mono">a₁ = √(S / 2,5) = ${nf(Math.sqrt(b.S / 2.5), 1)} → ${b.a1} cm</span>, <span class="mono">a₂ = S / a₁ = ${nf(b.S / b.a1, 1)} → ${b.a2} cm</span> (como el ejemplo de la pág. 76).` : `Cuadrada: <span class="mono">a = √S = ${nf(Math.sqrt(b.S), 1)} → ${b.a1} cm</span> (redondeado a 10 cm, como el ejemplo de la pág. 75: 205 → 210).`}${b.fijoA ? ` <b>Elegida en los datos: ${b.a1} × ${b.a2} cm</b> (${nf(b.a1 * b.a2, 0)} cm²); el suelo recibe <span class="mono">1,1 N / (a₁ × a₂) = ${nf(b.sigR)} kg/cm²</span> ${b.sigR <= S.sig + 1e-9 ? `≤ σs = ${nf(S.sig)}: alcanza.` : `<span class="no">&gt; σs = ${nf(S.sig)}: no alcanza</span>.`}` : ''}
         Ensanche para apoyar el encofrado de la columna (${b.c} × ${b.c} cm): b₁ = ${nf(b.b1, 1)} cm, b₂ = ${nf(b.b2, 1)} cm${b.tipo === 'e' ? ' (del lado de la medianera no hay ensanche: 2,5 en vez de 5, como el ejemplo de la pág. 77)' : ''}.</li>
-      <li><b>Momentos</b> (págs. 33 a 37): la reacción del suelo empuja hacia arriba y ${b.tipo === 'c' ? 'cada mitad de la base es una ménsula' : 'el lado que sale de la columna es una sola ménsula'}. <span class="mono">M₁ = N (a₁ − b₁)² ${M1t} = ${f3(b.Nt)} × (${nf(b.a1 / 100)} − ${nf(b.b1 / 100, 3)})² ${M1t.replace('a₁', nf(b.a1 / 100))} = ${f3(b.M1)} tm</span>; <span class="mono">M₂ = N (a₂ − b₂)² ${M2t} = ${f3(b.M2)} tm</span>.${b.tipo === 'c' ? ' Ojo: el ejemplo 1 del apunte (pág. 75) no divide por a₁ y da 22,82 tm donde la fórmula da 10,87; los ejemplos 2 y 3 sí dividen. Acá se usa la fórmula.' : ''}</li>
+      <li><b>Momentos</b> (págs. 33 a 37): la reacción del suelo empuja hacia arriba y ${b.tipo === 'c' ? 'cada mitad de la base es una ménsula' : 'el lado que sale de la columna es una sola ménsula'}. <span class="mono">M₁ = N (a₁ − b₁)² ${M1t} = ${f3(b.Nt)} × (${nf(b.a1 / 100)} − ${nf(b.b1 / 100, 3)})² ${M1t.replace('a₁', '× ' + nf(b.a1 / 100))} = ${f3(b.M1)} tm</span>; <span class="mono">M₂ = N (a₂ − b₂)² ${M2t} = ${f3(b.M2)} tm</span>.${b.tipo === 'c' ? ' Ojo: el ejemplo 1 del apunte (pág. 75) no divide por a₁ y da 22,82 tm donde la fórmula da 10,87; los ejemplos 2 y 3 sí dividen. Acá se usa la fórmula.' : ''}</li>
       <li><b>Altura</b>: ${b.comoH === 'rig' ? `base rígida (pág. 34), <span class="mono">d = (a₁ − c₁) / 2 = (${b.a1} − ${b.c}) / 2 = ${nf(b.dRig, 1)} cm</span>` : `con kh = 13,83 como los ejemplos de las págs. 77 y 79, <span class="mono">h = 13,83 × √(M / b) = ${nf(b.hKh, 1)} cm</span>`}; para el punzonado alcanzaría <span class="mono">h = N / (pc × 8) = ${nf(b.hPunz, 1)} cm</span>. ${b.fijoD ? `Lo calculado daba d = ${b.dAuto} cm; <b>elegido en los datos: d = ${b.d} cm, h = ${b.h} cm</b>` : `Se adopta el mayor, redondeado a 5 cm: <b>d = ${b.d} cm, h = d − 5 = ${b.h} cm</b>`}${b.subio ? ' (se subió para que kh entre en la Tabla 4)' : ''}. En el borde, d₀ = el mayor de 15 cm y d / 3 = ${nf(b.do, 0)} cm (pág. 32), así que d nunca baja de 15 cm.</li>
       <li><b>Flexión</b> (Tabla 4): según a₁, <span class="mono">kh = ${b.h} / √(${nf(b.M1 * 100, 1)} / ${nf(b.b2, 1)}) = ${nf(b.f1.kh)}</span> ${b.f1.ok ? `→ ke ${f3(b.f1.ke)}, <span class="mono">fe₁ = ${f3(b.f1.ke)} × ${nf(b.M1 * 100, 1)} / ${b.h} = ${nf(b.f1.fe)} cm²</span>` : '<span class="no">&lt; 6,08: fuera de la tabla</span>'}; según a₂, <span class="mono">kh = ${b.h} / √(${nf(b.M2 * 100, 1)} / ${nf(b.b1, 1)}) = ${nf(b.f2.kh)}</span> ${b.f2.ok ? `→ ke ${f3(b.f2.ke)}, <span class="mono">fe₂ = ${nf(b.f2.fe)} cm²</span>` : '<span class="no">&lt; 6,08: fuera de la tabla</span>'}. El ancho comprimido es el de la columna ensanchada (b₂ para M₁, b₁ para M₂).</li>
       <li><b>Barras</b>: parrilla con separación ≤ 20 cm (pág. 34) y recubrimiento 5 cm. Según a₁: ${b.bar1 ? `<b>${b.bar1.n} Ø${b.bar1.d}</b> (${nf(b.bar1.A)} cm²) repartidas en ${b.a2 - 10} cm, c/${nf(b.bar1.sep, 1)} cm` : '—'}; según a₂: ${b.bar2 ? `<b>${b.bar2.n} Ø${b.bar2.d}</b> (${nf(b.bar2.A)} cm²) c/${nf(b.bar2.sep, 1)} cm` : '—'}. Se elige el Ø de 8 a 16 que da menos área con separación entre 10 y 20 cm (criterio de este cálculo).</li>
@@ -5884,6 +5964,7 @@ function fichaLosa(R, id) {
   const s = R.G.SL.find(z => z.id === id), r = R.RL[id];
   const filas = r.items.map(it => `<tr><td>${SIDE[it.side]}</td><td class="mono">${it.calc}</td><td class="r">${f3(it.q)}</td></tr>`).join('');
   return `<div class="head"><h2>Losa ${id}</h2><span class="chip">${s.uso}</span></div>
+    ${INTRO.losa}${repaso([['f-losas', 'losas'], ['f-cruzadas', 'losas cruzadas'], ['f-pasos', 'cómo se usan las tablas'], ['f-continuas', 'voladizos']])}
     <p>q = ${f3(s.q)} t/m² (del TP). ${r.kind === '2D' ? `Dos direcciones, Tabla ${s.t}, ε = Lx / Ly = ${nf(s.x[1] - s.x[0])} / ${nf(s.y[1] - s.y[0])} = ${nf(r.eps, 3)}.` : r.kind === '1D' ? `Una dirección, luz ${nf(r.L)} m.` : `Voladizo de ${nf(r.L)} m con P = ${f3(s.P)} t en la punta: M = ${f3(r.M)} tm/m.`}</p>
     <div class="tblw"><table class="res"><thead><tr><th>Borde</th><th>Cuenta</th><th class="r">Carga a la viga (t/m)</th></tr></thead><tbody>${filas}</tbody></table></div>
     ${r.kind === '2D' ? `<p class="fine">Control: las cuatro reacciones suman ${f3(r.sum)} t; la losa carga q × Lx × Ly = ${f3(r.tot)} t.</p>` : ''}`;
@@ -5983,7 +6064,7 @@ dibujar();
 </script>
 </div>
 <script>window.__view();</script>
-<script>window.TT_CONF = { roots: ["#v-glos .wrap", "#v-form #formulas", "#v-guia main.wrap", "#v-ent main.steps", "#v-ent .plan-card", "#v-3d #panel", "#v-3d #legend"], exclude: "#gloss, #v-form .indice, #f-buscar" };</script>
+<script>window.TT_CONF = { roots: ["#v-glos .wrap", "#v-form #formulas", "#v-guia main.wrap", "#v-ent main.steps", "#v-ent .plan-card", "#v-3d #panel", "#v-3d #legend", "#v-tp #tp-ficha", "#v-tp #tp-sup"], exclude: "#gloss, #v-form .indice, #f-buscar" };</script>
 <script>
 /* ===== Explicaciones emergentes: letras y palabras técnicas ===== */
 (() => {
@@ -6063,7 +6144,21 @@ dibujar();
     ['s', 's · separación', 'Distancia entre estribos, o entre barras, en cm.', 1],
     ['σb', 'σb · tensión del hormigón', 'La compresión que soporta el hormigón de la losa en una viga placa (caso 2), en kg/cm². No puede pasar de βR.'],
     ['Σ', 'Σ · suma', 'Quiere decir "la suma de": Σ P es la suma de todas las cargas P.'],
-    ['α', 'α · inclinación', 'El ángulo de la escalera con el piso. tg α = contrahuella / huella.']
+    ['α', 'α · inclinación', 'El ángulo de la escalera con el piso. tg α = contrahuella / huella.'],
+    ['λ', 'λ · esbeltez', 'Qué tan alta es una columna comparada con su lado: λ = Sk / b (lado menor). Con λ se entra a la Tabla 7 para sacar ω.'],
+    ['ω', 'ω · coeficiente de pandeo', 'Agranda la carga de una columna esbelta para tener en cuenta el pandeo. Sale de la Tabla 7 con λ: vale 1 hasta λ = 15 y crece con la esbeltez.'],
+    ['ν', 'ν · coeficiente de seguridad', 'En columnas, la carga se multiplica por ν = 2,1 para dimensionar a la rotura (apunte, pág. 22).'],
+    ['Sk', 'Sk · longitud de pandeo', 'La altura que se usa para la esbeltez. En edificios se toma la altura de piso, sin empotramientos (k = 1).'],
+    ['μ', 'μ · cuantía', 'Cuánto acero tiene la columna: μ = fe / Fb × 100. Tiene que estar entre 0,8 % y 5 %.'],
+    ['Fb', 'Fb · sección de hormigón', 'El área de hormigón de la columna, en cm²: lado × lado.'],
+    ["σ'b", "σ'b · tensión de trabajo", "Para predimensionar una columna se toma la mitad de σ'bk: Fb = N / σ'b."],
+    ['σs', 'σs · tensión admisible del suelo', 'Lo que aguanta el suelo por cm², ya con el coeficiente de seguridad de 3. Para predimensionar: tosca 2 kg/cm², arena 0,5 (apunte, pág. 25).'],
+    ['τp', 'τp · tensión de punzonado', 'La carga de la columna repartida en la superficie de la columna metida en la base: τp = N / (pc × h). No puede pasar de 8 kg/cm².'],
+    ['pc', 'pc · perímetro de la columna', 'El perímetro de la columna que apoya en la base y la puede perforar: 4 lados en una base centrada, 3 en una excéntrica, 2 en una doblemente excéntrica.'],
+    ['a₁', 'a₁ · lado de la base', 'Uno de los lados de la base, en cm.'],
+    ['a₂', 'a₂ · lado de la base', 'El otro lado de la base, en cm.'],
+    ['b₁', 'b₁ · ensanche', 'La columna más 5 cm, donde apoya su encofrado sobre la base. Es el ancho que comprime para el momento M₂.'],
+    ['b₂', 'b₂ · ensanche', 'La columna más 5 cm en la otra dirección. Es el ancho que comprime para el momento M₁.']
   ];
   /* Palabras: se marca la primera vez que aparecen en cada bloque */
   const WORDS = [
@@ -6133,7 +6228,16 @@ dibujar();
     ['encofrar|encofrados?', 'Encofrado', 'El molde (de madera o metal) donde se llena el hormigón fresco hasta que endurece.'],
     ['fluencia', 'Fluencia', 'La tensión a la que el acero empieza a estirarse sin volver a su largo: 4200 kg/cm² en el ADN-420.'],
     ['aislad[oa]s?', 'Viga aislada', 'Viga que se calcula sola, apoyada en sus dos extremos, porque no es continua con otra.'],
-    ['bases', 'Bases', 'La parte de abajo de las columnas, enterrada, que reparte la carga en el suelo (las fundaciones). No están en la planta de la clase.'],
+    ['bases', 'Bases', 'La parte de abajo de las columnas, enterrada, que reparte la carga en el suelo (las fundaciones). La planta de la clase no las incluye.'],
+    ['pandeos?', 'Pandeo', 'Cuando una pieza comprimida y esbelta se dobla de costado antes de aplastarse. Cuanto más alta y fina la columna, más riesgo: por eso la carga se agranda con ω.'],
+    ['esbeltez', 'Esbeltez', 'Qué tan alta es una columna comparada con su lado: λ = Sk / b. Una columna esbelta se pandea con menos carga.'],
+    ['punzonado', 'Punzonado', 'Cuando la columna, apoyada en la base, la perfora como un sacabocados. Se evita con altura de base: τp = N / (pc × h) ≤ 8 kg/cm².'],
+    ['cuantías?', 'Cuantía', 'Cuánto acero hay en la sección, en %: μ = fe / Fb × 100. En columnas, entre 0,8 % y 5 %.'],
+    ['parrillas?', 'Parrilla', 'La malla de barras en dos direcciones del fondo de la base. No pueden quedar a más de 20 cm entre sí.'],
+    ['medianeras?', 'Medianera', 'El límite del terreno con el vecino. La base no puede pasarlo: si la columna está contra la medianera, la base es excéntrica.'],
+    ['línea municipal', 'Línea municipal', 'El límite del terreno con la vereda. La base no puede pasarlo.'],
+    ['excéntric[oa]s?', 'Base excéntrica', 'La columna no queda en el medio de la base sino contra un lado (o una esquina: doblemente excéntrica). Aparece un momento N × e que toma la columna.'],
+    ['tensión admisible', 'Tensión admisible', 'Lo que aguanta el suelo por cm², ya con el coeficiente de seguridad de 3 (σs).'],
     ['mosaicos?', 'Mosaico', 'Piso de baldosas de cemento: el apunte lo usa como piso de la escalera.'],
     ['revoques?', 'Revoque', 'Capa de mortero que termina una superficie (acá, la cara de abajo de la escalera).'],
     ['barandas?', 'Baranda', 'La protección del borde de un balcón o una escalera. Para la estructura es una carga en la punta.'],
