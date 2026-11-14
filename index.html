@@ -15,7 +15,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
 <style>
-/* Layout: una barra fija arriba con las cinco secciones; cada sección conserva su diseño y sus estilos aislados (#v-glos, #v-form, #v-guia, #v-ent, #v-3d) */
+/* Layout: una barra fija arriba con las seis secciones; cada sección conserva su diseño y sus estilos aislados (#v-glos, #v-form, #v-guia, #v-ent, #v-3d) */
 :root{
   --bg:#eef1f3; --surface:#ffffff; --surface-2:#f4f6f7; --ink:#1b2125; --muted:#5a656d; --line:#d2d8dc;
   --accent:#1e5ea6; --accent-soft:#e2ebf6; --rebar:#c0391f;
@@ -55,48 +55,48 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 /* ===== Estilos (data-skin) × modo (data-theme). "Hormigón" es el de siempre: sin atributo.
    Cada estilo cambia solo los colores neutros, el acento y los fondos del 3D; los colores de materiales y de estados
    (hierro, ladrillo, bien, ojo) siguen siendo los de cada sección en claro u oscuro. Se aplica a la barra (html) y a cada sección. */
-html[data-skin="papel"], html[data-skin="papel"] :is(#v-glos,#v-form,#v-guia,#v-ent,#v-3d){
+html[data-skin="papel"], html[data-skin="papel"] :is(#v-glos,#v-form,#v-guia,#v-ent,#v-3d,#v-tp){
   --bg:#f4efe5; --surface:#fffbf3; --surface-2:#f2ebdd; --ink:#2b2118; --muted:#6c5d4c; --line:#e0d5c1;
   --accent:#8a4b1f; --accent-soft:#f2e2d1; --hl:#fbefc8; --hl-ink:#5c4300; --slab:#ede4d3; --sel:#efdcc8;
   --scene:#ebe3d4; --ground:#e1d7c5; --grid:#cfc2ab; --label-bg:rgba(255,251,243,.92); color-scheme:light;
 }
-html[data-skin="papel"][data-theme="dark"], html[data-skin="papel"][data-theme="dark"] :is(#v-glos,#v-form,#v-guia,#v-ent,#v-3d){
+html[data-skin="papel"][data-theme="dark"], html[data-skin="papel"][data-theme="dark"] :is(#v-glos,#v-form,#v-guia,#v-ent,#v-3d,#v-tp){
   --bg:#1c1712; --surface:#251f19; --surface-2:#2d261e; --ink:#eee3d1; --muted:#b2a28b; --line:#3c3329;
   --accent:#e0a96d; --accent-soft:#3a2a1b; --hl:#3b3015; --hl-ink:#f2d48a; --slab:#322a21; --sel:#4a3824;
   --scene:#221c16; --ground:#2a231c; --grid:#3b3228; --label-bg:rgba(37,31,25,.92); color-scheme:dark;
 }
-html[data-skin="pizarra"], html[data-skin="pizarra"] :is(#v-glos,#v-form,#v-guia,#v-ent,#v-3d){
+html[data-skin="pizarra"], html[data-skin="pizarra"] :is(#v-glos,#v-form,#v-guia,#v-ent,#v-3d,#v-tp){
   --bg:#e8edf2; --surface:#f8fafc; --surface-2:#edf1f5; --ink:#1d2733; --muted:#536170; --line:#cdd7e1;
   --accent:#2c6c8c; --accent-soft:#dbebf2; --hl:#fff1cc; --hl-ink:#5f4700; --slab:#e0e7ee; --sel:#cde3ee;
   --scene:#dce4eb; --ground:#cfd8e1; --grid:#b7c4d0; --label-bg:rgba(248,250,252,.92); color-scheme:light;
 }
-html[data-skin="pizarra"][data-theme="dark"], html[data-skin="pizarra"][data-theme="dark"] :is(#v-glos,#v-form,#v-guia,#v-ent,#v-3d){
+html[data-skin="pizarra"][data-theme="dark"], html[data-skin="pizarra"][data-theme="dark"] :is(#v-glos,#v-form,#v-guia,#v-ent,#v-3d,#v-tp){
   --bg:#151e28; --surface:#1b2631; --surface-2:#212e3b; --ink:#d5dfe9; --muted:#8ea0b2; --line:#2b3947;
   --accent:#7cc4e4; --accent-soft:#1c3341; --hl:#2e3220; --hl-ink:#e3e7a8; --slab:#243240; --sel:#21445a;
   --scene:#19242f; --ground:#202e3c; --grid:#2d3e50; --label-bg:rgba(27,38,49,.92); color-scheme:dark;
 }
-html[data-skin="contraste"], html[data-skin="contraste"] :is(#v-glos,#v-form,#v-guia,#v-ent,#v-3d){
+html[data-skin="contraste"], html[data-skin="contraste"] :is(#v-glos,#v-form,#v-guia,#v-ent,#v-3d,#v-tp){
   --bg:#ffffff; --surface:#ffffff; --surface-2:#f0f0f0; --ink:#000000; --muted:#222222; --line:#6b6b6b;
   --accent:#0037b3; --accent-soft:#dfe7ff; --hl:#ffe94d; --hl-ink:#000000; --slab:#eeeeee; --sel:#c9d6ff;
   --scene:#f2f2f2; --ground:#e2e2e2; --grid:#8a8a8a; --label-bg:#ffffff; color-scheme:light;
 }
-html[data-skin="contraste"][data-theme="dark"], html[data-skin="contraste"][data-theme="dark"] :is(#v-glos,#v-form,#v-guia,#v-ent,#v-3d){
+html[data-skin="contraste"][data-theme="dark"], html[data-skin="contraste"][data-theme="dark"] :is(#v-glos,#v-form,#v-guia,#v-ent,#v-3d,#v-tp){
   --bg:#000000; --surface:#000000; --surface-2:#161616; --ink:#ffffff; --muted:#e6e6e6; --line:#9a9a9a;
   --accent:#ffd60a; --accent-soft:#332b00; --hl:#ffd60a; --hl-ink:#000000; --slab:#1c1c1c; --sel:#4d4000;
   --scene:#0a0a0a; --ground:#151515; --grid:#555555; --label-bg:rgba(0,0,0,.92); color-scheme:dark;
 }
 @media (prefers-color-scheme: dark){
-  html[data-skin="papel"]:not([data-theme="light"]), html[data-skin="papel"]:not([data-theme="light"]) :is(#v-glos,#v-form,#v-guia,#v-ent,#v-3d){
+  html[data-skin="papel"]:not([data-theme="light"]), html[data-skin="papel"]:not([data-theme="light"]) :is(#v-glos,#v-form,#v-guia,#v-ent,#v-3d,#v-tp){
     --bg:#1c1712; --surface:#251f19; --surface-2:#2d261e; --ink:#eee3d1; --muted:#b2a28b; --line:#3c3329;
     --accent:#e0a96d; --accent-soft:#3a2a1b; --hl:#3b3015; --hl-ink:#f2d48a; --slab:#322a21; --sel:#4a3824;
     --scene:#221c16; --ground:#2a231c; --grid:#3b3228; --label-bg:rgba(37,31,25,.92); color-scheme:dark;
   }
-  html[data-skin="pizarra"]:not([data-theme="light"]), html[data-skin="pizarra"]:not([data-theme="light"]) :is(#v-glos,#v-form,#v-guia,#v-ent,#v-3d){
+  html[data-skin="pizarra"]:not([data-theme="light"]), html[data-skin="pizarra"]:not([data-theme="light"]) :is(#v-glos,#v-form,#v-guia,#v-ent,#v-3d,#v-tp){
     --bg:#151e28; --surface:#1b2631; --surface-2:#212e3b; --ink:#d5dfe9; --muted:#8ea0b2; --line:#2b3947;
     --accent:#7cc4e4; --accent-soft:#1c3341; --hl:#2e3220; --hl-ink:#e3e7a8; --slab:#243240; --sel:#21445a;
     --scene:#19242f; --ground:#202e3c; --grid:#2d3e50; --label-bg:rgba(27,38,49,.92); color-scheme:dark;
   }
-  html[data-skin="contraste"]:not([data-theme="light"]), html[data-skin="contraste"]:not([data-theme="light"]) :is(#v-glos,#v-form,#v-guia,#v-ent,#v-3d){
+  html[data-skin="contraste"]:not([data-theme="light"]), html[data-skin="contraste"]:not([data-theme="light"]) :is(#v-glos,#v-form,#v-guia,#v-ent,#v-3d,#v-tp){
     --bg:#000000; --surface:#000000; --surface-2:#161616; --ink:#ffffff; --muted:#e6e6e6; --line:#9a9a9a;
     --accent:#ffd60a; --accent-soft:#332b00; --hl:#ffd60a; --hl-ink:#000000; --slab:#1c1c1c; --sel:#4d4000;
     --scene:#0a0a0a; --ground:#151515; --grid:#555555; --label-bg:rgba(0,0,0,.92); color-scheme:dark;
@@ -796,6 +796,111 @@ details.leer[open] summary{margin-bottom:6px}
 .go-card{display:none}
 @media (max-width:900px){ #pl-card,#stage{scroll-margin-top:calc(var(--gnav,0px) + 60px)} .go-card:not([hidden]){display:block;position:fixed;z-index:30;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));font:600 15px var(--f-body);padding:11px 18px;border-radius:999px;border:1px solid var(--accent);background:var(--accent);color:var(--surface);box-shadow:0 4px 14px rgba(0,0,0,.3);white-space:nowrap;cursor:pointer} }
 </style>
+<style type="text/x-scope" data-scope="#v-tp">
+/* Layout: una columna ancha. Arriba los datos, después las dos plantas (se tocan las piezas), las tablas resumen y la ficha de la pieza elegida */
+:root{
+  --bg:#f3f5f6; --surface:#ffffff; --surface-2:#f4f6f7; --ink:#1c2226; --muted:#5b666e; --line:#d3d9dd;
+  --accent:#1e5ea6; --accent-soft:#e3ecf7; --rebar:#c0391f; --slab:#e9edf0; --slab2:#dfe7ee; --vol:#f1e6d6;
+  --ok:#2b7448; --ok-bg:#e0f1e6; --warn:#8a5a00; --warn-bg:#fbecc9; --hard:#a8321b; --hard-bg:#f9e0d8;
+  --f-display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
+  --f-body:"Barlow","Segoe UI",Arial,sans-serif;
+  --f-mono:"IBM Plex Mono",Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#13171a; --surface:#1a1f23; --surface-2:#20262b; --ink:#e4e9ec; --muted:#9aa6ae; --line:#2e363c;
+    --accent:#77aef0; --accent-soft:#1d2b3b; --rebar:#ff7d61; --slab:#252c31; --slab2:#2a3540; --vol:#3a3125;
+    --ok:#7fd3a0; --ok-bg:#183527; --warn:#f0c46a; --warn-bg:#3a2e14; --hard:#ff9a80; --hard-bg:#3d1e17; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#13171a; --surface:#1a1f23; --surface-2:#20262b; --ink:#e4e9ec; --muted:#9aa6ae; --line:#2e363c;
+  --accent:#77aef0; --accent-soft:#1d2b3b; --rebar:#ff7d61; --slab:#252c31; --slab2:#2a3540; --vol:#3a3125;
+  --ok:#7fd3a0; --ok-bg:#183527; --warn:#f0c46a; --warn-bg:#3a2e14; --hard:#ff9a80; --hard-bg:#3d1e17; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.55 var(--f-body)}
+.tp{max-width:1180px;margin:0 auto;padding:24px 16px 64px;display:grid;gap:22px}
+.tp h1{font:700 34px/1.1 var(--f-display);margin:0}
+.tp h1 span{color:var(--rebar)}
+.tp h2{font:700 24px/1.15 var(--f-display);margin:0 0 10px}
+.tp h3{font:600 18px/1.2 var(--f-display);margin:14px 0 6px;letter-spacing:.01em}
+.tp p{margin:0}
+.tp section{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px}
+.tp section > * + *{margin-top:10px}
+.lead{color:var(--muted);max-width:75ch}
+.mono{font-family:var(--f-mono);font-size:.92em;font-variant-numeric:tabular-nums}
+.fine{font-size:13.5px;color:var(--muted)}
+.chip{display:inline-block;font:600 12px var(--f-mono);padding:1px 7px;border-radius:999px;background:var(--surface-2);border:1px solid var(--line)}
+.ok{color:var(--ok)} .no{color:var(--hard);font-weight:600}
+.ojo{background:var(--warn-bg);color:var(--ink);border-left:4px solid var(--warn);padding:10px 12px;border-radius:8px;font-size:14.5px}
+.datos{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px 18px}
+.datos label{display:grid;gap:3px;font-size:14px}
+.datos label small{color:var(--muted);font-size:12.5px;line-height:1.35}
+.datos input,.datos select,.tblw select{font:500 15px var(--f-mono);color:var(--ink);background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:6px 8px;min-width:0}
+.datos input:focus-visible,.datos select:focus-visible,.tblw select:focus-visible,button:focus-visible,[data-pz]:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.datos .chk{display:flex;gap:8px;align-items:flex-start}
+.qs{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px 14px}
+.qs label{font-size:13.5px}
+.btn{font:600 14px var(--f-body);color:var(--ink);background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:6px 12px;cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+.plantas{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px;align-items:start}
+.plantas figure{margin:0}
+.plantas figcaption{font:600 15px var(--f-display);letter-spacing:.02em;margin-bottom:4px}
+.plantas svg{width:100%;max-width:360px;height:auto;display:block;margin:0 auto}
+.tpl-slab{fill:var(--slab);stroke:none}
+.tpl-slab.vol{fill:var(--vol)}
+.tpl-slab.esc{fill:var(--slab2)}
+.tpl-lab{font:600 12px var(--f-mono);fill:var(--muted);text-anchor:middle}
+.tpl-beam{stroke:var(--ink);stroke-width:3}
+.tpl-beam.sup{stroke:var(--accent);stroke-dasharray:6 4}
+.tpl-hit{stroke:transparent;stroke-width:18;cursor:pointer}
+.tpl-col{fill:var(--surface);stroke:var(--ink);stroke-width:2;cursor:pointer}
+.tpl-bl{font:600 11px var(--f-mono);fill:var(--ink)}
+.tpl-cl{font:700 11px var(--f-mono);fill:var(--rebar)}
+[data-pz]{cursor:pointer}
+[data-pz].sel .tpl-beam,[data-pz].sel.tpl-beam{stroke:var(--rebar);stroke-width:5}
+[data-pz].sel .tpl-col{fill:var(--rebar)}
+.tpl-dim{stroke:var(--muted);stroke-width:1}
+.tpl-dt{font:500 10.5px var(--f-mono);fill:var(--muted);text-anchor:middle}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
+.tabs button{font:600 14.5px var(--f-body);color:var(--ink);background:none;border:1px solid var(--line);border-radius:999px;padding:6px 14px;cursor:pointer}
+.tabs button[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.tblw{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table.res{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums}
+table.res th{font:600 12px var(--f-body);color:var(--muted);text-align:left;padding:6px;border-bottom:1px solid var(--line);white-space:nowrap}
+table.res td{padding:6px;border-bottom:1px solid var(--line);vertical-align:top}
+table.res td.r,table.res th.r{text-align:right;white-space:nowrap}
+table.res td.r{font-family:var(--f-mono)}
+table.res tbody tr[data-pz]:hover td{background:var(--accent-soft)}
+table.res tbody tr.sel td{background:var(--accent-soft);font-weight:600}
+table.res tr.tot td{background:var(--surface-2);font-weight:600}
+ol.steps{margin:0;padding-left:22px;display:grid;gap:8px;font-size:15px}
+ol.steps .mono{white-space:normal}
+.ficha{display:grid;gap:12px}
+.ficha > *{min-width:0}
+.ficha .head{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:baseline}
+.ficha .head h2{margin:0}
+.resumen{background:var(--accent-soft);border-radius:10px;padding:10px 14px;font-size:15px}
+.resumen ul{margin:4px 0 0;padding-left:20px}
+svg.diag{width:100%;height:auto;max-width:640px;display:block}
+.d-ax{stroke:var(--muted);stroke-width:1}
+.d-beam{stroke:var(--ink);stroke-width:3}
+.d-sup{fill:none;stroke:var(--ink);stroke-width:1.4}
+.d-q{fill:var(--accent-soft);stroke:var(--accent);stroke-width:1}
+.d-P{stroke:var(--rebar);stroke-width:2}
+.d-Ph{fill:var(--rebar)}
+.d-V{fill:var(--accent);fill-opacity:.22;stroke:var(--accent);stroke-width:1.4}
+.d-M{fill:var(--rebar);fill-opacity:.18;stroke:var(--rebar);stroke-width:1.4}
+.d-t{font:500 11px var(--f-mono);fill:var(--ink)}
+.d-t2{font:500 10.5px var(--f-mono);fill:var(--muted)}
+.d-lab{font:700 13px var(--f-display);fill:var(--muted)}
+details.leer{border:1px solid var(--line);border-radius:10px;padding:8px 12px}
+details.leer summary{cursor:pointer;font-weight:600;color:var(--accent)}
+details.leer > * + *{margin-top:8px}
+ul.sup{margin:0;padding-left:20px;display:grid;gap:6px;font-size:15px}
+@media (max-width:600px){ .tp{padding:16px 12px 48px} .tp section{padding:14px 12px} .tp h1{font-size:28px} }
+</style>
 <script>
 /* Aísla los estilos de cada sección: antepone el contenedor (#v-...) a cada selector y corre las barras pegajosas debajo de la barra general */
 (() => {
@@ -836,6 +941,7 @@ details.leer[open] summary{margin-bottom:6px}
       <a href="#mapa" data-v="guia">Guía por partes</a>
       <a href="#formulas" data-v="form">Fórmulas</a>
       <a href="#L1" data-v="ent">Entrenador</a>
+      <a href="#tp" data-v="tp">TP grupo 8</a>
     </nav>
     <button type="button" class="gnav-ap" id="ap-btn" aria-haspopup="dialog" aria-controls="ap" aria-expanded="false" title="Apariencia: estilo, modo y ayudas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18c1.1 0 1.8-.8 1.8-1.7 0-.5-.2-.9-.5-1.2-.3-.3-.5-.7-.5-1.2 0-1 .8-1.8 1.8-1.8H17a4 4 0 0 0 4-4C21 6.6 17 3 12 3z"/><circle cx="7.5" cy="11.5" r="1.2"/><circle cx="10.5" cy="7.5" r="1.2"/><circle cx="15.5" cy="8" r="1.2"/></svg><span>Apariencia</span></button>
   </div>
@@ -901,8 +1007,8 @@ details.leer[open] summary{margin-bottom:6px}
 <script>
 /* Qué sección se ve según el enlace (#...). Se registra antes que las secciones para correr primero. */
 (() => {
-  const IDS = { glos: 'v-glos', form: 'v-form', guia: 'v-guia', ent: 'v-ent', tres: 'v-3d' };
-  const which = h => /^(formulas|f-[a-z0-9-]+)$/.test(h) ? 'form' : /^(mapa|parte-[1-6])$/.test(h) ? 'guia' : /^(planta|placa|muros)$/.test(h) ? 'tres' : /^(L[1-7]|LE)$/.test(h) ? 'ent' : 'glos';
+  const IDS = { glos: 'v-glos', form: 'v-form', guia: 'v-guia', ent: 'v-ent', tres: 'v-3d', tp: 'v-tp' };
+  const which = h => /^tp(-[A-Za-z0-9]+)?$/.test(h) ? 'tp' : /^(formulas|f-[a-z0-9-]+)$/.test(h) ? 'form' : /^(mapa|parte-[1-6])$/.test(h) ? 'guia' : /^(planta|placa|muros)$/.test(h) ? 'tres' : /^(L[1-7]|LE)$/.test(h) ? 'ent' : 'glos';
   let cur = null;
   /* al volver a abrir sin enlace, sigue donde quedó (en este dispositivo) */
   const KU = 'estructuras-ultima-v1';
@@ -5080,6 +5186,685 @@ drawPlan(); render();
 })();
 </script>
 
+</div>
+<div id="v-tp" class="view-pg" hidden>
+</head>
+<body>
+<main class="tp" id="tp">
+  <header>
+    <h1>TP 3 · Grupo 8 <span>·</span> vigas, columnas y bases</h1>
+    <p class="lead">La planta del TP 3 del grupo 8 (planta baja con entrepiso y planta alta con cubierta) cargada con sus losas y sus cargas. Con eso se calculan todas las vigas, las 10 columnas en sus dos tramos y las bases, con el método de la cátedra. Tocá una pieza en la planta o en las tablas para ver su ficha paso a paso. Los datos que el TP no da se pueden cambiar acá abajo.</p>
+  </header>
+
+  <section aria-labelledby="tp-datos-t">
+    <h2 id="tp-datos-t">Datos</h2>
+    <div class="datos" id="tp-datos">
+      <label>Altura de piso de PB (m)<input type="number" step="0.05" min="2" max="5" data-k="hPB"><small>No está en el TP. 2,60 sale de la escalera: 16 escalones de 0,16 m. Es la longitud de pandeo de la columna (k = 1, apunte pág. 22)</small></label>
+      <label>Altura de piso de PA (m)<input type="number" step="0.05" min="2" max="5" data-k="hPA"><small>Supuesta igual a la de PB</small></label>
+      <label>De la esquina de V3 a C5 (m)<input type="number" step="0.05" min="0.3" max="4.5" data-k="dC5"><small>No está acotado: ≈ 1,25 m medido a escala en el esquemático (pág. 2)</small></label>
+      <label>Hormigón de columnas y bases<select data-k="horm"><option value="H-17">H-17 (βR 140 kg/cm²)</option><option value="H-21">H-21 (βR 175 kg/cm²), el que dice el TP</option></select><small>Apunte, pág. 22. Vigas y bases usan la Tabla 4 del material, que es la de H-17 (la misma que usó el TP)</small></label>
+      <label>Tensión admisible del suelo (kg/cm²)<input type="number" step="0.1" min="0.3" max="10" data-k="sig"><small>2,0 es la de la tosca para predimensionar (apunte, pág. 25); el valor real sale del estudio de suelos</small></label>
+      <label class="chk"><input type="checkbox" data-k="muros"><span>Sumar los muros exteriores de planta alta sobre las vigas de PB<small><br>El TP no los analiza. Si lo marcás: 0,20 m × altura de PA × 1,6 t/m³ (el peso del muro que el TP usó en L4) sobre V1, V8, V10, V13, V3, V12, V5, V14 y V7</small></span></label>
+    </div>
+    <details class="leer">
+      <summary>Cargas de las losas (q, en kg/m²): las del TP</summary>
+      <div class="qs" id="tp-qs"></div>
+      <p class="fine">Son las del análisis de cargas del TP (págs. 6 a 8 y 18). L4: el TP suma las capas y da 517 kg/m², pero después escribe 571, y con eso llega a 913,85. Acá va 517 + 200 + 142,85 = 859,85; si querés reproducir el TP, poné 913,85. L5 lleva además P = 100 kg en la punta (pág. 17).</p>
+    </details>
+    <p><button type="button" class="btn" id="tp-reset">Volver a los datos del TP</button> <span class="fine">Los cambios se guardan en este dispositivo.</span></p>
+  </section>
+
+  <section aria-labelledby="tp-pl-t">
+    <h2 id="tp-pl-t">Planta</h2>
+    <p class="fine">Tocá una viga (línea) o una columna (cuadrado). La línea punteada azul es una viga que el TP no dibuja y que hace falta (ver "Supuestos"). Cotas en m.</p>
+    <div class="plantas" id="tp-plantas"></div>
+  </section>
+
+  <section aria-labelledby="tp-res-t">
+    <h2 id="tp-res-t">Resumen</h2>
+    <div class="tabs" role="group" aria-label="Qué piezas ver">
+      <button type="button" data-tab="vig" aria-pressed="true">Vigas</button>
+      <button type="button" data-tab="col" aria-pressed="false">Columnas</button>
+      <button type="button" data-tab="bas" aria-pressed="false">Bases</button>
+    </div>
+    <div id="tp-tabla"></div>
+  </section>
+
+  <section aria-live="polite" id="tp-ficha-s">
+    <div class="ficha" id="tp-ficha"></div>
+  </section>
+
+  <section aria-labelledby="tp-sup-t">
+    <h2 id="tp-sup-t">Supuestos y diferencias con el TP</h2>
+    <div id="tp-sup"></div>
+  </section>
+</main>
+<script>
+/* ===== CÁLCULO DEL TP 3, GRUPO 8 =====
+   Planta: "ESTRU LOSAS.pdf" del grupo 8 (esquemáticos de PB y PA, pág. 2; cargas, págs. 6 a 8 y 18).
+   Método: losas a vigas con las columnas de reacciones de las Tablas 3.x (apunte 2021, págs. 113 a 118);
+   vigas como en el material (D4: d0 = luz / 10, b0 ≥ d0 / 3; continuas de dos tramos con el método aproximado de la clase de vigas;
+   Tabla 4 de H-17; corte con τ0 ≤ 25 kg/cm²); columnas con el método ω (apunte, págs. 20 a 23 y 71 a 74, Tabla 7 en pág. 124);
+   bases aisladas centradas, excéntricas y doblemente excéntricas (apunte, págs. 31 a 37 y ejemplos de págs. 75 a 79).
+   Las tablas TABR, T4 y T4KX son copia de calc-planta.js y calc-clase.js: test-tp.html controla que sigan iguales. */
+(() => {
+const D = document, RAIZ = D.getElementById('tp'), $ = s => RAIZ.querySelector(s), $$ = s => [...RAIZ.querySelectorAll(s)];
+const nf = (v, d = 2) => { const x = Math.abs(v) < 0.5 * Math.pow(10, -d) ? 0 : v; return x.toFixed(d).replace('.', ',').replace('-', '−'); };
+const f3 = v => nf(v, 3);
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const up5 = v => Math.ceil(v / 5 - 1e-9) * 5;
+const up10 = v => Math.ceil(v / 10 - 1e-9) * 10;
+const near5 = v => Math.round(v / 5) * 5;
+
+/* ---------- tablas (copias controladas por test-tp.html) ---------- */
+const TABR = {
+  '3.1': { cols: ['Rx', 'Ry'], rows: [[.50, .269, .731], [.55, .268, .641], [.60, .267, .566], [.65, .266, .502], [.70, .265, .450], [.75, .263, .404], [.80, .261, .364], [.85, .259, .330], [.90, .256, .300], [.95, .253, .274], [1.00, .250, .250], [1.05, .274, .253], [1.10, .300, .256], [1.20, .330, .259], [1.25, .364, .261], [1.35, .404, .263], [1.40, .450, .265], [1.55, .502, .266], [1.65, .566, .267], [1.80, .641, .268], [2.00, .731, .269]] },
+  '3.2': { cols: ['Rx', 'Ry', "R'y"], rows: [[.50, .169, .613, 1.049], [.55, .168, .545, .947], [.60, .167, .487, .845], [.65, .167, .437, .769], [.70, .166, .394, .702], [.75, .166, .360, .643], [.80, .165, .329, .591], [.85, .165, .302, .545], [.90, .165, .278, .504], [.95, .165, .255, .467], [1.00, .166, .235, .433], [1.05, .186, .240, .440], [1.10, .209, .245, .449], [1.20, .234, .249, .460], [1.25, .263, .253, .471], [1.35, .298, .257, .482], [1.40, .339, .260, .492], [1.55, .388, .262, .501], [1.65, .447, .264, .508], [1.80, .519, .266, .514], [2.00, .606, .268, .520]] },
+  '3.2.a': { cols: ['Rx', "R'x", 'Ry'], rows: [[.50, .268, .520, .606], [.55, .266, .514, .519], [.60, .264, .508, .447], [.65, .262, .501, .388], [.70, .260, .492, .339], [.75, .257, .482, .298], [.80, .253, .471, .263], [.85, .249, .460, .234], [.90, .245, .449, .209], [.95, .240, .440, .186], [1.00, .235, .433, .166], [1.05, .255, .467, .165], [1.10, .278, .504, .165], [1.20, .302, .545, .165], [1.25, .329, .591, .165], [1.35, .360, .643, .166], [1.40, .394, .702, .166], [1.55, .437, .769, .167], [1.65, .487, .845, .167], [1.80, .545, .947, .168], [2.00, .613, 1.049, .169]] },
+  '3.4': { cols: ['Rx', "R'x", 'Ry', "R'y"], rows: [[.50, .157, .350, .526, .967], [.55, .158, .350, .458, .849], [.60, .158, .350, .403, .756], [.65, .159, .350, .356, .670], [.70, .159, .350, .315, .604], [.75, .160, .349, .279, .545], [.80, .161, .348, .248, .493], [.85, .162, .346, .222, .447], [.90, .163, .344, .200, .406], [.95, .163, .341, .180, .370], [1.00, .162, .338, .162, .338], [1.05, .180, .370, .163, .341], [1.10, .200, .406, .163, .344], [1.20, .222, .447, .162, .346], [1.25, .248, .493, .161, .348], [1.35, .279, .545, .160, .349], [1.40, .315, .604, .159, .350], [1.55, .356, .670, .159, .350], [1.65, .403, .756, .158, .350], [1.80, .458, .849, .158, .350], [2.00, .526, .957, .157, .350]] }
+};
+const T4 = [[24.88, .431], [13.83, .442], [10.25, .455], [8.57, .467], [7.36, .485], [6.91, .497], [6.65, .506], [6.57, .509], [6.49, .513], [6.41, .517], [6.33, .521], [6.24, .526], [6.16, .531], [6.08, .537]];
+const T4KX = [.091, .167, .231, .286, .355, .394, .424, .438, .452, .467, .483, .501, .519, .538];
+/* Tabla 7 del apunte (pág. 124), columnas rectangulares: Lp / b → ω */
+const T7 = [[15, 1], [18, 1.04], [20, 1.08], [22, 1.18], [25, 1.32], [27, 1.48], [28, 1.56], [30, 1.72], [38, 2.71], [40, 3.00]];
+const AB = { 6: .283, 8: .503, 10: .785, 12: 1.131, 16: 2.011, 20: 3.142 };
+const MAT = { ha: 2.4, sigE: 2400, betaS: 4200, tauAdm: 25, rec: 3, est: .28, nu: 2.1, tauP: 8, recB: 5 };
+const HORM = { 'H-17': { bk: 170, bR: 140 }, 'H-21': { bk: 210, bR: 175 } };
+
+function interpR(name, eps) {
+  const T = TABR[name], R = T.rows; let i = 0;
+  while (i < R.length - 2 && R[i + 1][0] < eps) i++;
+  const a = R[i], b = R[i + 1], t = clamp((eps - a[0]) / (b[0] - a[0]), 0, 1), v = {};
+  T.cols.forEach((c, k) => v[c] = a[k + 1] + (b[k + 1] - a[k + 1]) * t);
+  return { a, b, t, v, cols: T.cols };
+}
+function omega(lam) {
+  if (lam <= T7[0][0]) return { w: 1, txt: `λ ≤ 15: ω = 1` };
+  if (lam > T7[T7.length - 1][0]) return { w: null, txt: `λ > 40: fuera de la Tabla 7, hay que agrandar la columna` };
+  let i = 0; while (T7[i + 1][0] < lam) i++;
+  const a = T7[i], b = T7[i + 1], t = (lam - a[0]) / (b[0] - a[0]), w = a[1] + (b[1] - a[1]) * t;
+  return { w, txt: t < 1e-9 ? `fila ${a[0]}: ω = ${nf(a[1])}` : `entre las filas ${a[0]} (ω ${nf(a[1])}) y ${b[0]} (ω ${nf(b[1])}), interpolando: ω = ${f3(w)}` };
+}
+function tabla4(Mtcm, b, h) {
+  const kh = h / Math.sqrt(Mtcm / b), i = T4.findIndex(r => r[0] <= kh + 1e-9);
+  if (i < 0) return { kh, ok: false };
+  return { kh, ok: true, i, khT: T4[i][0], ke: T4[i][1], kx: T4KX[i], fe: T4[i][1] * Mtcm / h };
+}
+
+/* ---------- datos (los del TP por defecto) ---------- */
+const QTP = { L1: 681, L2: 781, LE: 1014.6, L3: 681, L4: 859.85, L5: 1053, L101: 619, L102: 619, L103: 619, L104: 619 };
+const DEF = () => ({ hPB: 2.6, hPA: 2.6, dC5: 1.25, horm: 'H-21', sig: 2.0, muros: false, q: { ...QTP }, base: {} });
+const KS = 'estructuras-tp8-v1';
+let S = DEF();
+try { const g = JSON.parse(localStorage.getItem(KS)); if (g && typeof g === 'object') S = { ...DEF(), ...g, q: { ...QTP, ...(g.q || {}) }, base: { ...(g.base || {}) } }; } catch (e) {}
+const guardar = () => { try { localStorage.setItem(KS, JSON.stringify(S)); } catch (e) {} };
+
+/* ---------- geometría (x a la derecha, y hacia abajo, en m; C1 en el origen) ---------- */
+function geo() {
+  const yC5 = 4.2 + S.dC5;
+  const COLS = { C1: [0, 0], C2: [3.2, 0], C3: [0, 4.2], C4: [3.2, 4.2], C5: [6, yC5], C6: [0, 9.2], C7: [3.2, 9.2], C8: [6, 9.2], C10: [0, 12], C11: [3.2, 12] };
+  const SL = [
+    { id: 'L1', lv: 'PB', x: [0, 3.2], y: [0, 4.2], k: '2D', t: '3.1', cont: {}, uso: 'dormitorio' },
+    { id: 'LE', lv: 'PB', x: [0, 1.1], y: [4.2, 9.2], k: '1D', dir: 'y', uso: 'escalera' },
+    { id: 'L2', lv: 'PB', x: [1.1, 3.2], y: [4.2, 9.2], k: '1D', dir: 'x', uso: 'pasillo' },
+    { id: 'L3', lv: 'PB', x: [3.2, 6], y: [4.2, 9.2], k: '2D', t: '3.1', cont: {}, uso: 'dormitorio' },
+    { id: 'L4', lv: 'PB', x: [0, 3.2], y: [9.2, 12], k: '2D', t: '3.1', cont: {}, uso: 'baño, con su muro' },
+    { id: 'L5', lv: 'PB', x: [3.2, 6], y: [9.2, 10.7], k: 'vol', side: 'N', P: .1, uso: 'balcón' },
+    { id: 'L101', lv: 'PA', x: [0, 3.2], y: [0, 4.2], k: '2D', t: '3.2.a', cont: { S: 1 }, uso: 'cubierta' },
+    { id: 'L102', lv: 'PA', x: [0, 3.2], y: [4.2, 9.2], k: '2D', t: '3.4', cont: { N: 1, E: 1 }, uso: 'cubierta' },
+    { id: 'L103', lv: 'PA', x: [3.2, 6], y: [4.2, 9.2], k: '2D', t: '3.2', cont: { W: 1 }, uso: 'cubierta' },
+    { id: 'L104', lv: 'PA', x: [0, 3.2], y: [9.2, 12], k: '2D', t: '3.1', cont: {}, uso: 'cubierta' }
+  ];
+  for (const s of SL) s.q = S.q[s.id] / 1000;
+  const B = (id, lv, a, b, sup, extra = {}) => ({ id, lv, a, b, sup, ...extra });
+  const BM = [
+    B('V1', 'PB', [0, 0], [3.2, 0], [[0, 'C1'], [3.2, 'C2']]),
+    B('V8', 'PB', [0, 0], [0, 4.2], [[0, 'C1'], [4.2, 'C3']]),
+    B('V9', 'PB', [3.2, 0], [3.2, 4.2], [[0, 'C2'], [4.2, 'C4']]),
+    B('V2', 'PB', [0, 4.2], [3.2, 4.2], [[0, 'C3'], [3.2, 'C4']]),
+    B('V3', 'PB', [3.2, 4.2], [6, 4.2], [[0, 'C4'], [2.8, 'V12']]),
+    B('VE', 'PB', [1.1, 4.2], [1.1, 9.2], [[0, 'V2'], [5, 'V4']], { supuesta: true }),
+    B('V10', 'PB', [0, 4.2], [0, 9.2], [[0, 'C3'], [5, 'C6']]),
+    B('V11', 'PB', [3.2, 4.2], [3.2, 9.2], [[0, 'C4'], [5, 'C7']]),
+    B('V12', 'PB', [6, 4.2], [6, 9.2], [[S.dC5, 'C5'], [5, 'C8']]),
+    B('V4', 'PB', [0, 9.2], [3.2, 9.2], [[0, 'C6'], [3.2, 'C7']]),
+    B('V5', 'PB', [3.2, 9.2], [6, 9.2], [[0, 'C7'], [2.8, 'C8']]),
+    B('V13', 'PB', [0, 9.2], [0, 12], [[0, 'C6'], [2.8, 'C10']]),
+    B('V14', 'PB', [3.2, 9.2], [3.2, 12], [[0, 'C7'], [2.8, 'C11']]),
+    B('V7', 'PB', [0, 12], [3.2, 12], [[0, 'C10'], [3.2, 'C11']]),
+    B('V101', 'PA', [0, 0], [3.2, 0], [[0, 'C1'], [3.2, 'C2']]),
+    B('V107', 'PA', [0, 0], [0, 4.2], [[0, 'C1'], [4.2, 'C3']]),
+    B('V108', 'PA', [3.2, 0], [3.2, 4.2], [[0, 'C2'], [4.2, 'C4']]),
+    B('V102', 'PA', [0, 4.2], [3.2, 4.2], [[0, 'C3'], [3.2, 'C4']]),
+    B('V103', 'PA', [3.2, 4.2], [6, 4.2], [[0, 'C4'], [2.8, 'V111']]),
+    B('V109', 'PA', [0, 4.2], [0, 9.2], [[0, 'C3'], [5, 'C6']]),
+    B('V110', 'PA', [3.2, 4.2], [3.2, 9.2], [[0, 'C4'], [5, 'C7']]),
+    B('V111', 'PA', [6, 4.2], [6, 9.2], [[S.dC5, 'C5'], [5, 'C8']]),
+    B('V104', 'PA', [0, 9.2], [3.2, 9.2], [[0, 'C6'], [3.2, 'C7']]),
+    B('V105', 'PA', [3.2, 9.2], [6, 9.2], [[0, 'C7'], [2.8, 'C8']]),
+    B('V112', 'PA', [0, 9.2], [0, 12], [[0, 'C6'], [2.8, 'C10']]),
+    B('V113', 'PA', [3.2, 9.2], [3.2, 12], [[0, 'C7'], [2.8, 'C11']]),
+    B('V106', 'PA', [0, 12], [3.2, 12], [[0, 'C10'], [3.2, 'C11']])
+  ];
+  const CH = [['V8', 'V10'], ['V9', 'V11'], ['V2', 'V3'], ['V4', 'V5'], ['V107', 'V109'], ['V108', 'V110'], ['V102', 'V103'], ['V104', 'V105']];
+  const MUROS = ['V1', 'V8', 'V10', 'V13', 'V3', 'V12', 'V5', 'V14', 'V7'];
+  return { COLS, SL, BM, CH, MUROS };
+}
+
+/* ---------- losas: qué carga pasa cada una a sus bordes ---------- */
+const SIDE = { N: 'superior', S: 'inferior', W: 'izquierdo', E: 'derecho' };
+function edgeLine(s, side) {
+  const [x0, x1] = s.x, [y0, y1] = s.y;
+  return side === 'W' ? { ax: 'y', at: x0, lo: y0, hi: y1 } : side === 'E' ? { ax: 'y', at: x1, lo: y0, hi: y1 } : side === 'N' ? { ax: 'x', at: y0, lo: x0, hi: x1 } : { ax: 'x', at: y1, lo: x0, hi: x1 };
+}
+function reacLosa(s) {
+  const lx = s.x[1] - s.x[0], ly = s.y[1] - s.y[0];
+  if (s.k === 'vol') {
+    const L = ly, V = s.q * L + s.P;
+    return { kind: 'vol', L, V, M: s.q * L * L / 2 + s.P * L, items: [{ side: s.side, line: edgeLine(s, s.side), q: V, calc: `q × L + P = ${f3(s.q)} × ${nf(L)} + ${f3(s.P)}` }], tot: V * lx };
+  }
+  if (s.k === '1D') {
+    const L = s.dir === 'x' ? lx : ly, r = s.q * L / 2, sides = s.dir === 'x' ? ['W', 'E'] : ['N', 'S'];
+    return { kind: '1D', L, items: sides.map(side => ({ side, line: edgeLine(s, side), q: r, calc: `q × L / 2 = ${f3(s.q)} × ${nf(L)} / 2` })), tot: s.q * lx * ly };
+  }
+  const eps = lx / ly, Lmin = Math.min(lx, ly), rr = interpR(s.t, eps);
+  const items = ['N', 'S', 'W', 'E'].map(side => {
+    const xe = side === 'N' || side === 'S', key = (s.cont[side] ? "R'" : 'R') + (xe ? 'x' : 'y');
+    if (!(key in rr.v)) throw new Error(`Tabla ${s.t} sin columna ${key} (losa ${s.id})`);
+    const coef = rr.v[key], R = coef * s.q * Lmin * Lmin, len = xe ? lx : ly;
+    return { side, line: edgeLine(s, side), key, coef, R, len, q: R / len, calc: `${key} × q × Lmín² / largo = ${nf(coef, 4)} × ${f3(s.q)} × ${nf(Lmin)}² / ${nf(len)}` };
+  });
+  return { kind: '2D', eps, Lmin, rr, items, sum: items.reduce((a, i) => a + i.R, 0), tot: s.q * lx * ly };
+}
+
+/* ---------- viga: resolver con dos apoyos (puede tener voladizo) y momentos en los extremos ---------- */
+function resolver(L, sups, uni, P, Ml = 0, Mr = 0) {
+  const [s1, s2] = sups;
+  let F = 0, Mo = 0;
+  for (const u of uni) { const f = u.q * (u.x2 - u.x1); F += f; Mo += f * ((u.x1 + u.x2) / 2 - s1); }
+  for (const p of P) { F += p.P; Mo += p.P * (p.a - s1); }
+  const span = s2 - s1, dM = (Mr - Ml) / span;
+  const R2 = Mo / span - dM, R1 = F - R2;
+  const R = [R1, R2], ss = [s1, s2];
+  const xs = []; for (let i = 0; i <= 400; i++) xs.push(L * i / 400);
+  const e = 1e-6; for (const s of [...ss, ...P.map(p => p.a)]) xs.push(Math.max(0, s - e), Math.min(L, s + e));
+  for (const u of uni) xs.push(u.x1, u.x2);
+  xs.sort((a, b) => a - b);
+  const ov = (u, a, b) => Math.max(0, Math.min(b, u.x2) - Math.max(a, u.x1));
+  const Vat = x => { let v = 0; ss.forEach((s, i) => { if (s < x) v += R[i]; }); for (const u of uni) v -= u.q * ov(u, 0, x); for (const p of P) if (p.a < x) v -= p.P; return v; };
+  const Mat = x => {
+    let m = Ml; ss.forEach((s, i) => { if (s < x) m += R[i] * (x - s); });
+    for (const u of uni) { const o = ov(u, 0, x); if (o > 0) m -= u.q * o * (x - (Math.max(0, u.x1) + o / 2)); }
+    for (const p of P) if (p.a < x) m -= p.P * (x - p.a);
+    return m;
+  };
+  const V = xs.map(Vat), M = xs.map(Mat);
+  let iMax = 0, iMin = 0; M.forEach((m, i) => { if (m > M[iMax]) iMax = i; if (m < M[iMin]) iMin = i; });
+  return { L, ss, R, xs, V, M, F, Mpos: Math.max(0, M[iMax]), xPos: xs[iMax], Mneg: Math.min(0, M[iMin]), xNeg: xs[iMin], Vat, Mat };
+}
+
+/* ---------- toda la planta ---------- */
+function calcular() {
+  const G = geo(), RL = {};
+  for (const s of G.SL) RL[s.id] = reacLosa(s);
+  const BMI = Object.fromEntries(G.BM.map(b => [b.id, b]));
+  const line = b => b.a[0] === b.b[0] ? { ax: 'y', at: b.a[0], s0: b.a[1], s1: b.b[1] } : { ax: 'x', at: b.a[1], s0: b.a[0], s1: b.b[0] };
+  for (const b of G.BM) { b.ln = line(b); b.L = Math.abs(b.ln.s1 - b.ln.s0); b.chain = G.CH.find(c => c.includes(b.id)) || [b.id]; }
+  /* sección (D4) por cadena: d0 = luz mayor entre apoyos / 10, redondeado a 5 cm; b0 = primer múltiplo de 5 ≥ d0 / 3 */
+  for (const b of G.BM) {
+    const tramos = b.chain.flatMap(id => { const x = BMI[id]; const [s1, s2] = x.sup.map(p => p[0]); return [s2 - s1, s1, x.L - s2].filter(v => v > 1e-6); });
+    const Lmax = Math.max(...tramos), d0 = up5(Lmax * 10), b0 = Math.max(15, up5(d0 / 3));
+    b.sec = { Lmax, d0, b0, h: d0 - MAT.rec, pp: b0 / 100 * d0 / 100 * MAT.ha };
+  }
+  /* cargas repartidas de cada viga */
+  for (const b of G.BM) {
+    const lo0 = Math.min(b.ln.s0, b.ln.s1), hi0 = Math.max(b.ln.s0, b.ln.s1), loc = s => Math.abs(s - b.ln.s0);
+    b.uni = [{ q: b.sec.pp, x1: 0, x2: b.L, name: 'peso propio', calc: `${nf(b.sec.b0 / 100)} × ${nf(b.sec.d0 / 100)} × 2,4 t/m³` }];
+    for (const s of G.SL) if (s.lv === b.lv) for (const it of RL[s.id].items) {
+      if (it.line.ax !== b.ln.ax || Math.abs(it.line.at - b.ln.at) > 1e-6) continue;
+      const lo = Math.max(it.line.lo, lo0), hi = Math.min(it.line.hi, hi0); if (hi - lo < .01) continue;
+      const [x1, x2] = [loc(lo), loc(hi)].sort((p, q) => p - q);
+      b.uni.push({ q: it.q, x1, x2, name: `losa ${s.id}`, calc: it.calc, de: s.id });
+    }
+    if (S.muros && b.lv === 'PB' && G.MUROS.includes(b.id)) b.uni.push({ q: .2 * S.hPA * 1.6, x1: 0, x2: b.L, name: 'muro de PA', calc: `0,20 × ${nf(S.hPA)} × 1,6 t/m³` });
+    b.P = [];
+  }
+  /* orden: una viga se resuelve después de las que apoyan en ella */
+  const units = []; const vistos = new Set();
+  for (const b of G.BM) if (!vistos.has(b.id)) { b.chain.forEach(i => vistos.add(i)); units.push(b.chain); }
+  const resuelta = new Set(), colN = {}, orden = [];
+  for (const c of Object.keys(G.COLS)) colN[c] = { PB: [], PA: [] };
+  let guard = 0;
+  while (resuelta.size < G.BM.length) {
+    if (++guard > 100) throw new Error('No se pudo ordenar el cálculo de las vigas');
+    for (const u of units) {
+      if (u.every(i => resuelta.has(i))) continue;
+      const pend = G.BM.filter(x => !resuelta.has(x.id) && !u.includes(x.id) && x.sup.some(p => u.includes(p[1])));
+      if (pend.length) continue;
+      resolverUnidad(u.map(i => BMI[i]));
+      u.forEach(i => { resuelta.add(i); orden.push(i); });
+      for (const id of u) {
+        const b = BMI[id];
+        b.sup.forEach(([s, to], k) => {
+          const R = b.res.R[k];
+          if (to[0] === 'C') colN[to][b.lv].push({ de: id, R });
+          else {
+            const t = BMI[to], pt = b.ln.ax === 'x' ? [b.ln.s0 + s * Math.sign(b.ln.s1 - b.ln.s0), b.ln.at] : [b.ln.at, b.ln.s0 + s * Math.sign(b.ln.s1 - b.ln.s0)];
+            const a = t.ln.ax === 'x' ? Math.abs(pt[0] - t.ln.s0) : Math.abs(pt[1] - t.ln.s0);
+            t.P.push({ P: R, a, name: id, calc: `reacción de ${id}` });
+          }
+        });
+      }
+    }
+  }
+  function resolverUnidad(bs) {
+    for (const b of bs) for (const p of b.sup) if (!(p[0] >= -1e-9 && p[0] <= b.L + 1e-9)) throw new Error(`Apoyo fuera de ${b.id}`);
+    if (bs.length === 1) { const b = bs[0]; b.res = resolver(b.L, b.sup.map(p => p[0]), b.uni, b.P); return; }
+    const [A, B] = bs;
+    if (A.sup[1][1] !== B.sup[0][1] || A.sup[0][0] !== 0 || Math.abs(A.sup[1][0] - A.L) > 1e-9 || B.sup[0][0] !== 0 || Math.abs(B.sup[1][0] - B.L) > 1e-9) throw new Error(`Cadena ${A.id}–${B.id} mal armada`);
+    const fem = (b, desdeIzq) => {
+      const qeq = b.uni.reduce((a, u) => a + u.q * (u.x2 - u.x1), 0) / b.L, Lq = qeq * b.L * b.L / 8;
+      const terms = b.P.map(p => { const a = desdeIzq ? p.a : b.L - p.a, c = b.L - a; return { p, a, M: p.P * a * c * (b.L + a) / (2 * b.L * b.L) }; });
+      return { qeq, Lq, terms, M: Lq + terms.reduce((x, t) => x + t.M, 0) };
+    };
+    const fA = fem(A, true), fB = fem(B, false), Map = (fA.M + fB.M) / 2;
+    A.res = resolver(A.L, [0, A.L], A.uni, A.P, 0, -Map);
+    B.res = resolver(B.L, [0, B.L], B.uni, B.P, -Map, 0);
+    A.cad = B.cad = { A: A.id, B: B.id, fA, fB, Map, rel: Math.min(A.L, B.L) / Math.max(A.L, B.L), col: A.sup[1][1] };
+  }
+  /* dimensionado de cada viga */
+  for (const b of G.BM) {
+    const sec = b.sec;
+    b.tramo = sec && b.res.Mpos > 1e-6 ? dimViga(b.res.Mpos, sec) : null;
+    const Mneg = b.cad ? b.cad.Map : -b.res.Mneg;
+    b.apoyo = Mneg > 1e-6 ? dimViga(Mneg, sec) : null;
+    b.apoyoDonde = b.cad ? `sobre ${b.cad.col}` : (Mneg > 1e-6 ? `sobre ${b.sup[0][1]} (voladizo)` : '');
+    b.corte = b.res.ss.map((s, k) => ['izq', 'der'].map(lado => corte(b, k, lado)).filter(Boolean)).flat();
+  }
+  /* columnas: de arriba hacia abajo (apunte, pág. 20: vigas + peso propio + lo que baja del piso de arriba) */
+  const h = HORM[S.horm], COL = {};
+  for (const id of Object.keys(G.COLS)) {
+    const pa = disenoCol(sumR(colN[id].PA), 0, S.hPA, h, 20);
+    const pb = disenoCol(sumR(colN[id].PB), pa.Nbot, S.hPB, h, pa.b);
+    COL[id] = { id, xy: G.COLS[id], vig: colN[id], PA: pa, PB: pb, N: pb.Nbot };
+  }
+  const BAS = {};
+  for (const id of Object.keys(G.COLS)) BAS[id] = disenoBase(COL[id].N, COL[id].PB.b, S.base[id] || 'c');
+  return { G, RL, BMI, COL, BAS, colN, orden };
+}
+const sumR = arr => arr.reduce((a, x) => a + x.R, 0);
+
+/* dimensionado a flexión (sección rectangular b0 × h, lado seguro) y barras en una fila */
+function dimViga(Mtm, sec) {
+  const Mt = Mtm * 100, t = tabla4(Mt, sec.b0, sec.h);
+  const r = { M: Mtm, Mt, ...t, b: sec.b0, h: sec.h };
+  if (t.ok) r.bar = barras(t.fe, sec.b0);
+  return r;
+}
+function barras(fe, b0) {
+  const ds = [10, 12, 16, 20], cand = [];
+  for (let k = 0; k < ds.length; k++) for (const f2 of [ds[k], ds[k + 1]]) {
+    if (!f2) continue; const f1 = ds[k];
+    for (let n1 = f2 === f1 ? 2 : 1; n1 <= 6; n1++) for (let n2 = f2 === f1 ? 0 : 1; n2 <= (f2 === f1 ? 0 : 6); n2++) {
+      const n = n1 + n2, w = (n1 * f1 + n2 * f2) / 10 + (n - 1) * 2 + 2 * MAT.rec;
+      if (w > b0 + 1e-9) continue;
+      const A = n1 * AB[f1] + n2 * AB[f2]; if (A >= fe - 1e-9) cand.push({ n1, f1, n2, f2, n, A, w });
+    }
+  }
+  cand.sort((a, b) => a.A - b.A || a.n - b.n);
+  return cand[0] || null;
+}
+const barTxt = b => b ? (b.n2 ? `${b.n1} Ø${b.f1} + ${b.n2} Ø${b.f2}` : `${b.n1} Ø${b.f1}`) + ` (${nf(b.A)} cm²)` : 'no entran en una fila: agrandar b₀';
+/* corte junto a un apoyo, como en el material (clase de vigas, diapositivas 27 a 33) */
+function corte(b, k, lado) {
+  const r = b.res, s = r.ss[k], sec = b.sec, x = lado === 'izq' ? s - 1e-6 : s + 1e-6;
+  if (x < 0 || x > r.L) return null;
+  const v0 = r.Vat(lado === 'izq' ? s - 1e-5 : s + 2e-5);
+  if (Math.abs(v0) < 1e-6) return null;
+  const z = .85 * sec.h, tau = v => Math.abs(v) * 1000 / (sec.b0 * z), tau0 = tau(v0);
+  const sep = Math.min(25, Math.floor(.6 * sec.d0)), taus = 2 * MAT.est * MAT.sigE / (sep * sec.b0);
+  let area = 0, dir = lado === 'izq' ? -1 : 1, xx = s, sg = Math.sign(v0), largo = 0;
+  const dx = r.L / 800;
+  while (true) {
+    const xn = xx + dir * dx; if (xn < 0 || xn > r.L) break;
+    const v1 = r.Vat(xn); if (Math.sign(v1) !== sg) break;
+    const t1 = tau(v1) - taus; if (t1 <= 0) break;
+    area += t1 * dx * 100; largo += dx * 100; xx = xn;
+  }
+  const quien = b.sup[k][1];
+  return { donde: `${quien}, lado ${lado === 'izq' ? 'izquierdo' : 'derecho'}`, Q: Math.abs(v0), z, tau0, ok: tau0 <= MAT.tauAdm, sep, taus, area, largo, f45: area * sec.b0 / (1.41 * MAT.sigE) };
+}
+
+/* fórmula (1) del apunte, pág. 23: N ν ω = Fb βR + fe βs, despejando fe (N en t, b en cm) */
+const feCol = (N, b, w, bR) => (N * 1000 * MAT.nu * w - b * b * bR) / MAT.betaS;
+/* columna: método ω. Nvig: lo que le pasan las vigas de este piso; Narr: lo que baja del piso de arriba */
+function disenoCol(Nvig, Narr, hp, H, bmin) {
+  const sigB = H.bk / 2, N0 = Nvig + Narr, Fb0 = N0 * 1000 / sigB;
+  let b = Math.max(20, near5(Math.sqrt(Fb0)), bmin), it = [];
+  let r;
+  for (let k = 0; k < 12; k++) {
+    const pp = (b / 100) * (b / 100) * hp * MAT.ha, N = N0 + pp, Fb = b * b, lam = hp * 100 / b, om = omega(lam);
+    const w = om.w || 9;
+    const feC = feCol(N, b, w, H.bR), mu = feC / Fb * 100;
+    r = { b, pp, N, Nvig, Narr, Fb, lam, om, w, feC, mu, sigB, Fb0, hp };
+    it.push({ b, mu, w: om.w });
+    if (om.w && mu <= 5) break;
+    b += 5;
+  }
+  r.iter = it;
+  r.feMin = .008 * r.Fb;
+  r.fe = Math.max(r.feC, r.feMin);
+  r.porMin = r.feC < r.feMin;
+  const cands = [];
+  for (const n of [4, 6, 8]) for (const d of [12, 16, 20]) { const A = n * AB[d]; if (A >= r.fe - 1e-9) cands.push({ n, d, A }); }
+  cands.sort((a, c) => a.A - c.A || a.n - c.n);
+  r.bar = cands[0] || null;
+  r.estr = r.bar ? { d: r.bar.d <= 20 ? 6 : 8, s: Math.floor(Math.min(r.b, 12 * r.bar.d / 10)) } : null;
+  r.Nbot = r.N;
+  return r;
+}
+
+/* base aislada: tipo 'c' centrada, 'e' excéntrica, 'd' doblemente excéntrica (apunte, págs. 31 a 37 y 75 a 79) */
+function disenoBase(Nt, c, tipo) {
+  const N = Nt * 1000, S = 1.1 * N / S_sig(), r = { tipo, Nt, N, c, S };
+  if (tipo === 'e') { r.a1 = up5(Math.sqrt(S / 2.5)); r.a2 = up10(S / r.a1); r.b1 = c + 2.5; r.b2 = c + 5; r.pc = 3 * c; }
+  else if (tipo === 'd') { r.a1 = r.a2 = up10(Math.sqrt(S)); r.b1 = r.b2 = c + 5; r.pc = 2 * c; }
+  else { r.a1 = r.a2 = up10(Math.sqrt(S)); r.b1 = r.b2 = c + 5; r.pc = 4 * c; }
+  const a1 = r.a1 / 100, a2 = r.a2 / 100, b1 = r.b1 / 100, b2 = r.b2 / 100;
+  r.M1 = tipo === 'c' ? Nt * (a1 - b1) ** 2 / (8 * a1) : Nt * (a1 - b1) ** 2 / (2 * a1);
+  r.M2 = tipo === 'e' || tipo === 'c' ? Nt * (a2 - b2) ** 2 / (8 * a2) : Nt * (a2 - b2) ** 2 / (2 * a2);
+  r.hPunz = N / (r.pc * MAT.tauP);
+  if (tipo === 'c') { r.dRig = (r.a1 - c) / 2; r.d = Math.max(up5(r.dRig), up5(r.hPunz + MAT.recB), 25); r.h = r.d - MAT.recB; r.comoH = 'rig'; }
+  else {
+    const Mm = Math.max(r.M1 * 100 / r.b2, r.M2 * 100 / r.b1);
+    r.hKh = 13.83 * Math.sqrt(Mm); r.h = Math.max(up5(r.hKh), up5(r.hPunz), 20); r.d = r.h + MAT.recB; r.comoH = 'kh';
+  }
+  for (let k = 0; k < 20; k++) {
+    r.f1 = tabla4(r.M1 * 100, r.b2, r.h); r.f2 = tabla4(r.M2 * 100, r.b1, r.h);
+    if (r.f1.ok && r.f2.ok) break;
+    r.h += 5; r.d += 5; r.subio = true;
+  }
+  r.do = Math.max(15, r.d / 3);
+  r.tau = N / (r.pc * r.h);
+  r.bar1 = barrasBase(r.f1.fe, r.a2); r.bar2 = barrasBase(r.f2.fe, r.a1);
+  return r;
+}
+function S_sig() { return S.sig; }
+function barrasBase(fe, ancho) {
+  const w = ancho - 2 * MAT.recB, cands = [];
+  for (const d of [8, 10, 12, 16]) {
+    const nMin = Math.max(2, Math.ceil(fe / AB[d] - 1e-9), Math.ceil(w / 20 - 1e-9) + 1), nMax = Math.floor(w / 10) + 1;
+    if (nMin > nMax) continue;
+    cands.push({ d, n: nMin, A: nMin * AB[d], sep: w / (nMin - 1) });
+  }
+  cands.sort((a, b) => a.A - b.A || a.n - b.n);
+  return cands[0] || null;
+}
+const tipoTxt = { c: 'centrada', e: 'excéntrica', d: 'doblemente excéntrica' };
+
+/* ---------- dibujo de las plantas ---------- */
+function plantaSVG(R, lv, sel) {
+  const sc = 40, ox = 30, oy = 26, X = x => ox + x * sc, Y = y => oy + y * sc, W = ox + 6 * sc + 40, H = oy + 12 * sc + 30;
+  let s = '';
+  for (const sl of R.G.SL.filter(z => z.lv === lv)) {
+    const cls = sl.k === 'vol' ? 'tpl-slab vol' : sl.id === 'LE' ? 'tpl-slab esc' : 'tpl-slab';
+    s += `<rect class="${cls}" x="${X(sl.x[0]) + 2}" y="${Y(sl.y[0]) + 2}" width="${(sl.x[1] - sl.x[0]) * sc - 4}" height="${(sl.y[1] - sl.y[0]) * sc - 4}"/>`;
+    const yl = sl.x[1] - sl.x[0] < 1.5 ? sl.y[0] + 1 : (sl.y[0] + sl.y[1]) / 2;
+    s += `<text class="tpl-lab" x="${X((sl.x[0] + sl.x[1]) / 2)}" y="${Y(yl) + 4}">${sl.id}</text>`;
+  }
+  for (const b of R.G.BM.filter(z => z.lv === lv)) {
+    const [x1, y1] = b.a, [x2, y2] = b.b, horiz = y1 === y2, mx = X((x1 + x2) / 2), my = Y((y1 + y2) / 2);
+    s += `<g data-pz="${b.id}" tabindex="0" role="button" aria-label="Viga ${b.id}" class="${sel === b.id ? 'sel' : ''}"><line class="tpl-beam${b.supuesta ? ' sup' : ''}" x1="${X(x1)}" y1="${Y(y1)}" x2="${X(x2)}" y2="${Y(y2)}"/><line class="tpl-hit" x1="${X(x1)}" y1="${Y(y1)}" x2="${X(x2)}" y2="${Y(y2)}"/>`;
+    s += horiz ? `<text class="tpl-bl" x="${mx}" y="${my + 15}" text-anchor="middle">${b.id}</text>` : `<text class="tpl-bl" x="${mx + 7}" y="${my + 4}">${b.id}</text>`;
+    s += `</g>`;
+  }
+  for (const [id, [x, y]] of Object.entries(R.G.COLS)) {
+    const c = R.COL[id][lv], z = Math.max(9, c.b / 100 * sc);
+    s += `<g data-pz="${id}" tabindex="0" role="button" aria-label="Columna ${id}" class="${sel === id ? 'sel' : ''}"><rect class="tpl-col" x="${X(x) - z / 2}" y="${Y(y) - z / 2}" width="${z}" height="${z}"/><text class="tpl-cl" x="${X(x) + (x > 5 ? -z / 2 - 3 : z / 2 + 3)}" y="${Y(y) + (y > 11 ? -z / 2 - 2 : z / 2 + 11)}" text-anchor="${x > 5 ? 'end' : 'start'}">${id}</text></g>`;
+  }
+  /* cotas */
+  const dim = (a, b, y, t) => `<line class="tpl-dim" x1="${X(a)}" y1="${y}" x2="${X(b)}" y2="${y}"/><text class="tpl-dt" x="${(X(a) + X(b)) / 2}" y="${y - 3}">${t}</text>`;
+  const dimv = (a, b, x, t) => `<line class="tpl-dim" x1="${x}" y1="${Y(a)}" x2="${x}" y2="${Y(b)}"/><text class="tpl-dt" x="${x - 4}" y="${(Y(a) + Y(b)) / 2}" transform="rotate(-90 ${x - 4} ${(Y(a) + Y(b)) / 2})">${t}</text>`;
+  s += dim(0, 3.2, oy - 12, '3,20') + dim(3.2, 6, oy + 4.2 * sc - 12, '2,80');
+  s += dimv(0, 4.2, ox - 14, '4,20') + dimv(4.2, 9.2, ox - 14, '5,00') + dimv(9.2, 12, ox - 14, '2,80');
+  s += `<line class="tpl-dim" x1="${X(6) + 14}" y1="${Y(4.2)}" x2="${X(6) + 14}" y2="${Y(4.2 + S.dC5)}"/><text class="tpl-dt" x="${X(6) + 18}" y="${Y(4.2 + S.dC5 / 2) + 4}" text-anchor="start">${nf(S.dC5)}</text>`;
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Esquemático de ${lv === 'PB' ? 'planta baja' : 'planta alta'}">${s}</svg>`;
+}
+
+/* ---------- diagramas de una viga ---------- */
+function vigaSVG(b) {
+  const r = b.res, W = 620, x0 = 50, x1 = 580, sx = (x1 - x0) / r.L, X = x => x0 + x * sx;
+  const yb = 64, yV = 178, yM = 305, hV = 52, hM = 60;
+  const Vmax = Math.max(...r.V.map(Math.abs)) || 1, Mmax = Math.max(...r.M.map(Math.abs)) || 1;
+  let s = `<text class="d-lab" x="6" y="${yb + 4}">q</text><text class="d-lab" x="6" y="${yV + 4}">V</text><text class="d-lab" x="6" y="${yM + 4}">M</text>`;
+  /* cargas repartidas apiladas */
+  const qs = b.uni.filter(u => u.q > 1e-9), qmax = Math.max(...qs.map(u => u.q)) || 1;
+  let stack = {}; qs.forEach(u => { const k = `${nf(u.x1)}-${nf(u.x2)}`; const base = stack[k] || 0, hh = 6 + 30 * u.q / qmax / Math.max(1, qs.length / 2); s += `<rect class="d-q" x="${X(u.x1)}" y="${yb - 6 - base - hh}" width="${(u.x2 - u.x1) * sx}" height="${hh}"><title>${u.name}: ${f3(u.q)} t/m</title></rect>`; stack[k] = base + hh; });
+  for (const p of b.P) s += `<line class="d-P" x1="${X(p.a)}" y1="${yb - 52}" x2="${X(p.a)}" y2="${yb - 8}"/><path class="d-Ph" d="M${X(p.a) - 5},${yb - 12} L${X(p.a) + 5},${yb - 12} L${X(p.a)},${yb - 4} Z"/><text class="d-t" x="${X(p.a) + 4}" y="${yb - 44}">${p.name} ${f3(p.P)} t</text>`;
+  s += `<line class="d-beam" x1="${X(0)}" y1="${yb}" x2="${X(r.L)}" y2="${yb}"/>`;
+  r.ss.forEach((ss, k) => { s += `<path class="d-sup" d="M${X(ss)},${yb + 2} l-8,12 h16 z"/><text class="d-t2" x="${X(ss)}" y="${yb + 26}" text-anchor="middle">${b.sup[k][1]} · R ${f3(r.R[k])} t</text>`; });
+  /* V (positivo arriba) */
+  const pV = r.xs.map((x, i) => `${X(x).toFixed(1)},${(yV - r.V[i] / Vmax * hV).toFixed(1)}`).join(' L');
+  s += `<line class="d-ax" x1="${X(0)}" y1="${yV}" x2="${X(r.L)}" y2="${yV}"/><path class="d-V" d="M${X(0)},${yV} L${pV} L${X(r.L)},${yV} Z"/>`;
+  const iVm = r.V.reduce((a, v, i) => Math.abs(v) > Math.abs(r.V[a]) ? i : a, 0);
+  s += `<text class="d-t" x="${X(r.xs[iVm])}" y="${yV - r.V[iVm] / Vmax * hV + (r.V[iVm] > 0 ? -5 : 13)}" text-anchor="middle">${f3(r.V[iVm])} t</text>`;
+  /* M (positivo abajo, como en los apuntes) */
+  const pM = r.xs.map((x, i) => `${X(x).toFixed(1)},${(yM + r.M[i] / Mmax * hM).toFixed(1)}`).join(' L');
+  s += `<line class="d-ax" x1="${X(0)}" y1="${yM}" x2="${X(r.L)}" y2="${yM}"/><path class="d-M" d="M${X(0)},${yM} L${pM} L${X(r.L)},${yM} Z"/>`;
+  if (r.Mpos > 1e-6) s += `<text class="d-t" x="${X(r.xPos)}" y="${yM + r.Mpos / Mmax * hM + 14}" text-anchor="middle">${f3(r.Mpos)} tm</text>`;
+  if (r.Mneg < -1e-6) s += `<text class="d-t" x="${clamp(X(r.xNeg), x0 + 30, x1 - 30)}" y="${yM + r.Mneg / Mmax * hM - 6}" text-anchor="middle">${f3(r.Mneg)} tm</text>`;
+  return `<svg class="diag" viewBox="0 0 ${W} ${yM + hM + 30}" role="img" aria-label="Cargas, corte y momento de ${b.id}">${s}</svg>`;
+}
+
+/* ---------- fichas ---------- */
+const irA = id => `<a href="#tp-${id}" data-ir="${id}">${id}</a>`;
+function fichaViga(R, b) {
+  const r = b.res, sec = b.sec, lvTxt = b.lv === 'PB' ? 'planta baja (entrepiso)' : 'planta alta (cubierta)';
+  const cad = b.cad ? `Es continua con ${irA(b.cad.A === b.id ? b.cad.B : b.cad.A)} sobre ${irA(b.cad.col)}: relación de luces ${nf(b.cad.rel)} ≥ 0,75 (clase de vigas).` : (b.sup[0][0] > 0 ? `Tiene un voladizo de ${nf(b.sup[0][0])} m: en la esquina no hay columna.` : 'Simplemente apoyada.');
+  const apoyos = b.sup.map(([s, to]) => to[0] === 'C' ? `columna ${irA(to)}` : `viga ${irA(to)}`).join(' y ');
+  const tbl = `<div class="tblw"><table class="res"><thead><tr><th>Carga</th><th>De dónde sale</th><th class="r">Desde (m)</th><th class="r">Hasta (m)</th><th class="r">q (t/m)</th></tr></thead><tbody>
+    ${b.uni.map(u => `<tr><td>${u.de ? irA(u.de) : u.name}</td><td class="mono">${u.calc}</td><td class="r">${nf(u.x1)}</td><td class="r">${nf(u.x2)}</td><td class="r">${f3(u.q)}</td></tr>`).join('')}
+    ${b.P.map(p => `<tr><td>Puntual de ${irA(p.name)}</td><td>${p.calc}, que apoya acá</td><td class="r" colspan="2">a ${nf(p.a)}</td><td class="r">P = ${f3(p.P)} t</td></tr>`).join('')}
+    <tr class="tot"><td colspan="4">Total que carga</td><td class="r">${f3(r.F)} t</td></tr></tbody></table></div>`;
+  const dimTxt = (d, que) => {
+    if (!d) return '';
+    if (!d.ok) return `<li><b>${que}</b>: M = ${f3(d.M)} tm. <span class="mono">kh = ${sec.h} / √(${nf(d.Mt, 1)} / ${sec.b0}) = ${nf(d.kh)}</span> &lt; 6,08: <span class="no">la sección no alcanza</span>, hay que agrandar d₀ o b₀.</li>`;
+    return `<li><b>${que}</b>: M = ${f3(d.M)} tm = ${nf(d.Mt, 1)} tcm. <span class="mono">kh = h / √(M / b₀) = ${sec.h} / √(${nf(d.Mt, 1)} / ${sec.b0}) = ${nf(d.kh)}</span> → Tabla 4, fila ${nf(d.khT)}: ke = ${f3(d.ke)}. <span class="mono">fe = ke × M / h = ${f3(d.ke)} × ${nf(d.Mt, 1)} / ${sec.h} = ${nf(d.fe)} cm²</span> → <b>${barTxt(d.bar)}</b>.</li>`;
+  };
+  const cad2 = b.cad ? `<li><b>Momento sobre ${b.cad.col}</b> (método aproximado de la clase para dos tramos continuos): cada tramo se toma empotrado en ${b.cad.col} y apoyado en la otra punta, <span class="mono">M = q L² / 8</span> (+ las puntuales); el del apoyo es el promedio. ${irA(b.cad.A)}: q equivalente ${f3(b.cad.fA.qeq)} t/m → ${f3(b.cad.fA.M)} tm; ${irA(b.cad.B)}: ${f3(b.cad.fB.qeq)} t/m → ${f3(b.cad.fB.M)} tm. <span class="mono">M apoyo = (${f3(b.cad.fA.M)} + ${f3(b.cad.fB.M)}) / 2 = −${f3(b.cad.Map)} tm</span>. Con ese momento en el apoyo, cada tramo se resuelve con sus cargas reales.</li>` : '';
+  const crt = b.corte;
+  return `<div class="head"><h2>Viga ${b.id}</h2><span class="chip">${lvTxt}</span>${b.supuesta ? '<span class="chip">no está en el TP</span>' : ''}</div>
+    ${b.supuesta ? `<p class="ojo">El TP no dibuja esta viga, pero L2 es de una dirección con luz 2,10 m (de x = 1,10 a V11) y su borde izquierdo, junto a la escalera, tiene que apoyar en algo. Se supone una viga de 1,10 a 1,10 entre ${irA('V2')} y ${irA('V4')}. Consultalo en clase: si va un muro o la losa se resuelve de otra forma, cambian V2, V4 y las columnas C3, C4, C6 y C7.</p>` : ''}
+    <div class="resumen"><b>Resultado</b><ul>
+      <li>Sección b₀ × d₀ = ${sec.b0} × ${sec.d0} cm (h = ${sec.h} cm).</li>
+      ${b.tramo ? `<li>Tramo: M = ${f3(r.Mpos)} tm → ${b.tramo.ok ? barTxt(b.tramo.bar) : '<span class="no">no alcanza la sección</span>'}.</li>` : ''}
+      ${b.apoyo ? `<li>Apoyo ${b.apoyoDonde}: M = −${f3(b.apoyo.M)} tm → ${b.apoyo.ok ? barTxt(b.apoyo.bar) : '<span class="no">no alcanza la sección</span>'} arriba.</li>` : ''}
+      <li>Reacciones: ${b.sup.map(([s, to], k) => `${to} ${f3(r.R[k])} t`).join(' · ')}.</li>
+      <li>Corte: τ₀ máximo ${nf(Math.max(...crt.map(c => c.tau0)))} kg/cm² ${crt.every(c => c.ok) ? '<span class="ok">≤ 25</span>' : '<span class="no">&gt; 25: agrandar la sección</span>'}; estribos Ø6 c/${crt[0] ? crt[0].sep : '—'} cm${crt.some(c => c.f45 >= .1) ? `; hacen falta barras a 45° (${crt.filter(c => c.f45 >= .1).map(c => `${c.donde}: ${nf(c.f45)} cm²`).join('; ')})` : ', alcanzan solos'}.</li>
+    </ul></div>
+    <h3>1 · Dónde está y en qué apoya</h3>
+    <p>Largo ${nf(b.L)} m, apoyada en ${apoyos}. ${cad}</p>
+    <h3>2 · Sección (predimensionado)</h3>
+    <p>Con el criterio que usa el material para las vigas de la clase: <span class="mono">d₀ = luz / 10 = ${nf(sec.Lmax)} m / 10 = ${nf(sec.Lmax * 10, 1)} cm → ${sec.d0} cm</span> (la luz mayor entre apoyos${b.chain.length > 1 ? ' de las dos vigas continuas, que van con la misma sección' : ''}), <span class="mono">b₀ ≥ d₀ / 3 = ${nf(sec.d0 / 3, 1)} → ${sec.b0} cm</span>, <span class="mono">h = d₀ − 3 = ${sec.h} cm</span>. Peso propio: <span class="mono">${nf(sec.b0 / 100)} × ${nf(sec.d0 / 100)} × 2,4 = ${f3(sec.pp)} t/m</span>.</p>
+    <h3>3 · Cargas</h3>
+    <p>Cada losa le pasa la reacción de su borde. Las de dos direcciones salen de las columnas de reacciones de las Tablas 3.x (coeficiente × q × luz menor², la reacción total del borde, dividida por su largo); las de una dirección, q × L / 2; el voladizo, q × L + P.</p>
+    ${tbl}
+    <h3>4 · Corte, momento y reacciones</h3>
+    <ol class="steps">${cad2}<li>Reacciones por equilibrio: ${b.sup.map(([s, to], k) => `${to}: ${f3(r.R[k])} t`).join('; ')} (suman ${f3(r.R[0] + r.R[1])} t = lo cargado, ${f3(r.F)} t).</li>
+      <li>Momento máximo de tramo: ${f3(r.Mpos)} tm a ${nf(r.xPos)} m${r.Mneg < -1e-6 ? `; momento negativo: ${f3(r.Mneg)} tm a ${nf(r.xNeg)} m` : ''}.</li></ol>
+    ${vigaSVG(b)}
+    <p class="fine">Arriba, las cargas (los rectángulos son las repartidas, apiladas si van en el mismo tramo; las flechas, las puntuales). En el medio el corte V (positivo arriba) y abajo el momento M (positivo abajo, como en los apuntes: tracciona abajo).</p>
+    <h3>5 · Dimensionado a flexión (Tabla 4)</h3>
+    <ol class="steps">${dimTxt(b.tramo, 'Tramo (hierro abajo)')}${dimTxt(b.apoyo, `Apoyo ${b.apoyoDonde} (hierro arriba)`)}</ol>
+    <p class="fine">Sección rectangular de ancho b₀ (lado seguro: si la losa trabaja con la viga como viga placa, en el tramo hace falta un poco menos de hierro). Barras: la combinación de menor área de Ø10 a Ø20 que entra en una fila con 3 cm de recubrimiento y 2 cm entre barras, mínimo 2 Ø10 (criterio del material; el apunte usa a veces 2 Ø8).</p>
+    <h3>6 · Corte</h3>
+    <div class="tblw"><table class="res"><thead><tr><th>Junto a</th><th class="r">Q (t)</th><th class="r">τ₀ (kg/cm²)</th><th class="r">≤ 25</th><th class="r">τs estribos</th><th class="r">Fe 45° (cm²)</th></tr></thead><tbody>
+    ${crt.map(c => `<tr><td>${c.donde}</td><td class="r">${f3(c.Q)}</td><td class="r">${nf(c.tau0)}</td><td class="r">${c.ok ? 'sí' : '<b>no</b>'}</td><td class="r">${nf(c.taus)}</td><td class="r">${c.f45 >= .1 ? nf(c.f45) : '—'}</td></tr>`).join('')}</tbody></table></div>
+    <p class="fine"><span class="mono">τ₀ = Q / (b₀ × 0,85 h)</span>; estribos Ø6 de 2 ramas cada <span class="mono">s = mín(25; 0,6 d₀)</span> toman <span class="mono">τs = 2 × 0,28 × 2400 / (s × b₀)</span>; lo que sobra va con barras a 45°: <span class="mono">Fe 45° = área de τ por encima de τs × b₀ / (1,41 × 2400)</span>. Igual que en el material (clase de vigas, diapositivas 27 a 33).</p>`;
+}
+function fichaCol(R, c) {
+  const H = HORM[S.horm];
+  const bloque = (lv, d) => {
+    const vig = c.vig[lv], hp = lv === 'PA' ? S.hPA : S.hPB;
+    return `<h3>${lv === 'PA' ? 'Tramo de planta alta' : 'Tramo de planta baja'}</h3>
+    <ol class="steps">
+      <li><b>Carga</b>: ${vig.length ? vig.map(v => `${irA(v.de)} ${f3(v.R)} t`).join(' + ') : 'ninguna viga de este piso'}${d.Narr ? ` + lo que baja de PA ${f3(d.Narr)} t` : ''} = ${f3(d.Nvig + d.Narr)} t; más su peso propio <span class="mono">${nf(d.b / 100)} × ${nf(d.b / 100)} × ${nf(hp)} × 2,4 = ${f3(d.pp)} t</span> → <b>N = ${f3(d.N)} t</b>.</li>
+      <li><b>Predimensionado</b> (apunte, pág. 23): <span class="mono">σ'b = σ'bk / 2 = ${H.bk} / 2 = ${d.sigB} kg/cm²</span>; <span class="mono">Fb = N / σ'b = ${nf((d.Nvig + d.Narr) * 1000, 0)} / ${d.sigB} = ${nf(d.Fb0, 0)} cm²</span> → lado √Fb = ${nf(Math.sqrt(d.Fb0), 1)} cm → <b>${d.b} × ${d.b} cm</b>${d.iter.length > 1 ? ` (se agrandó: con ${d.iter[0].b} cm la cuantía daba ${nf(d.iter[0].mu, 1)} %, más del 5 %)` : ''}${lv === 'PB' && d.b === c.PA.b && Math.sqrt(d.Fb0) < c.PA.b - 2.5 ? ' (no más chica que la de arriba)' : ''}. Lado mínimo 20 cm (pág. 20); redondeado a 5 cm, criterio de este cálculo.</li>
+      <li><b>Esbeltez</b>: <span class="mono">λ = Sk / b = ${nf(hp * 100, 0)} / ${d.b} = ${nf(d.lam, 1)}</span> (Sk = altura de piso, k = 1) → Tabla 7: ${d.om.txt}.</li>
+      <li><b>Acero</b> (fórmula 1): <span class="mono">fe = (N × ν × ω − Fb × βR) / βs = (${nf(d.N * 1000, 0)} × 2,1 × ${f3(d.w)} − ${nf(d.Fb, 0)} × ${H.bR}) / 4200 = ${nf(d.feC)} cm²</span>${d.porMin ? `; da menos que la cuantía mínima, 0,8 % × ${nf(d.Fb, 0)} = ${nf(d.feMin)} cm², que es la que manda` : ` (cuantía ${nf(d.mu, 2)} %, entre 0,8 y 5 %)`} → <b>${d.bar ? `${d.bar.n} Ø${d.bar.d} (${nf(d.bar.A)} cm²)` : 'no entra'}</b>; estribos Ø${d.estr.d} c/${d.estr.s} cm (el menor entre el lado, ${d.b} cm, y 12 Ø = ${nf(12 * d.bar.d / 10, 1)} cm).</li>
+    </ol>`;
+  };
+  return `<div class="head"><h2>Columna ${c.id}</h2><span class="chip">${S.horm}</span></div>
+    <div class="resumen"><b>Resultado</b><ul>
+      <li>Planta alta: ${c.PA.b} × ${c.PA.b} cm, ${c.PA.bar.n} Ø${c.PA.bar.d}, estribos Ø${c.PA.estr.d} c/${c.PA.estr.s}; N = ${f3(c.PA.N)} t.</li>
+      <li>Planta baja: ${c.PB.b} × ${c.PB.b} cm, ${c.PB.bar.n} Ø${c.PB.bar.d}, estribos Ø${c.PB.estr.d} c/${c.PB.estr.s}; N = ${f3(c.PB.N)} t.</li>
+      <li>A la base ${irA('B' + c.id.slice(1))} baja <b>${f3(c.N)} t</b>.</li></ul></div>
+    <p>La columna junta lo que le pasan las vigas que llegan a ella, su peso propio y lo que baja del piso de arriba (apunte, pág. 20). Se calcula de arriba hacia abajo. Método ω: <span class="mono">N × ν × ω = Fb × βR + fe × βs</span>, con ν = 2,1, βR = ${H.bR} kg/cm² (${S.horm}) y βs = 4200 kg/cm² (apunte, págs. 22 y 23).</p>
+    ${bloque('PA', c.PA)}${bloque('PB', c.PB)}
+    <p class="fine">Compresión centrada: no incluye el momento que le pasarían una base excéntrica o las vigas que apoyan de un solo lado. Si su base es excéntrica, la columna trabaja a flexión compuesta y se dimensiona con el ábaco de la Tabla 10 (apunte, pág. 78), que este cálculo no hace.</p>`;
+}
+function fichaBase(R, id) {
+  const cid = 'C' + id.slice(1), c = R.COL[cid], b = R.BAS[cid], N = b.N;
+  const M1t = b.tipo === 'c' ? '/ (8 a₁)' : '/ (2 a₁)', M2t = b.tipo === 'd' ? '/ (2 a₂)' : '/ (8 a₂)';
+  const pcT = b.tipo === 'c' ? `2 c₁ + 2 c₂ = 4 × ${b.c}` : b.tipo === 'e' ? `2 c₁ + c₂ = 3 × ${b.c}` : `c₁ + c₂ = 2 × ${b.c}`;
+  return `<div class="head"><h2>Base ${id}</h2><span class="chip">${tipoTxt[b.tipo]}</span><span class="chip">bajo ${cid}</span></div>
+    <div class="resumen"><b>Resultado</b><ul>
+      <li>Planta ${b.a1} × ${b.a2} cm; d = ${b.d} cm (h = ${b.h} cm), d₀ = ${nf(b.do, 0)} cm en el borde.</li>
+      <li>Parrilla: según a₁ ${b.bar1 ? `${b.bar1.n} Ø${b.bar1.d} c/${nf(b.bar1.sep, 0)} cm` : '—'} (fe₁ ${nf(b.f1.fe)} cm²); según a₂ ${b.bar2 ? `${b.bar2.n} Ø${b.bar2.d} c/${nf(b.bar2.sep, 0)} cm` : '—'} (fe₂ ${nf(b.f2.fe)} cm²).</li>
+      <li>Punzonado: τp = ${nf(b.tau)} kg/cm² ${b.tau <= 8 ? '<span class="ok">≤ 8</span>' : '<span class="no">&gt; 8</span>'}.</li></ul></div>
+    <p>Tipo: <label>${selBase(cid)}</label> <span class="fine">Centrada si la columna puede quedar en el medio de la base; excéntrica si está contra una medianera o la línea municipal; doblemente excéntrica en la esquina de las dos (apunte, pág. 31). El TP no dice dónde están las medianeras: elegilo vos.</span></p>
+    <ol class="steps">
+      <li><b>Carga</b>: la de ${irA(cid)} al pie, N = ${f3(b.Nt)} t = ${nf(N, 0)} kg.</li>
+      <li><b>Superficie</b> (pág. 32): el peso de la base y del relleno se toma como el 10 % de N. <span class="mono">S = 1,1 N / σs = 1,1 × ${nf(N, 0)} / ${nf(S.sig)} = ${nf(b.S, 0)} cm²</span>.
+        ${b.tipo === 'e' ? `Con a₂ = 2,5 a₁ (pág. 35, para achicar el momento): <span class="mono">a₁ = √(S / 2,5) = ${nf(Math.sqrt(b.S / 2.5), 1)} → ${b.a1} cm</span>, <span class="mono">a₂ = S / a₁ = ${nf(b.S / b.a1, 1)} → ${b.a2} cm</span> (como el ejemplo de la pág. 76).` : `Cuadrada: <span class="mono">a = √S = ${nf(Math.sqrt(b.S), 1)} → ${b.a1} cm</span> (redondeado a 10 cm, como el ejemplo de la pág. 75: 205 → 210).`}
+        Ensanche para apoyar el encofrado de la columna (${b.c} × ${b.c} cm): b₁ = ${nf(b.b1, 1)} cm, b₂ = ${nf(b.b2, 1)} cm${b.tipo === 'e' ? ' (del lado de la medianera no hay ensanche: 2,5 en vez de 5, como el ejemplo de la pág. 77)' : ''}.</li>
+      <li><b>Momentos</b> (págs. 33 a 37): la reacción del suelo empuja hacia arriba y ${b.tipo === 'c' ? 'cada mitad de la base es una ménsula' : 'el lado que sale de la columna es una sola ménsula'}. <span class="mono">M₁ = N (a₁ − b₁)² ${M1t} = ${f3(b.Nt)} × (${nf(b.a1 / 100)} − ${nf(b.b1 / 100, 3)})² ${M1t.replace('a₁', nf(b.a1 / 100))} = ${f3(b.M1)} tm</span>; <span class="mono">M₂ = N (a₂ − b₂)² ${M2t} = ${f3(b.M2)} tm</span>.${b.tipo === 'c' ? ' Ojo: el ejemplo 1 del apunte (pág. 75) no divide por a₁ y da 22,82 tm donde la fórmula da 10,87; los ejemplos 2 y 3 sí dividen. Acá se usa la fórmula.' : ''}</li>
+      <li><b>Altura</b>: ${b.comoH === 'rig' ? `base rígida (pág. 34), <span class="mono">d = (a₁ − c₁) / 2 = (${b.a1} − ${b.c}) / 2 = ${nf(b.dRig, 1)} cm</span>` : `con kh = 13,83 como los ejemplos de las págs. 77 y 79, <span class="mono">h = 13,83 × √(M / b) = ${nf(b.hKh, 1)} cm</span>`}; para el punzonado alcanzaría <span class="mono">h = N / (pc × 8) = ${nf(b.hPunz, 1)} cm</span>. Se adopta <b>d = ${b.d} cm, h = d − 5 = ${b.h} cm</b>${b.subio ? ' (se subió para que kh entre en la Tabla 4)' : ''}; en el borde d₀ = el mayor de 15 cm y d / 3 = ${nf(b.do, 0)} cm.</li>
+      <li><b>Flexión</b> (Tabla 4): según a₁, <span class="mono">kh = ${b.h} / √(${nf(b.M1 * 100, 1)} / ${nf(b.b2, 1)}) = ${nf(b.f1.kh)}</span> → ke ${f3(b.f1.ke)}, <span class="mono">fe₁ = ${f3(b.f1.ke)} × ${nf(b.M1 * 100, 1)} / ${b.h} = ${nf(b.f1.fe)} cm²</span>; según a₂, <span class="mono">kh = ${b.h} / √(${nf(b.M2 * 100, 1)} / ${nf(b.b1, 1)}) = ${nf(b.f2.kh)}</span> → ke ${f3(b.f2.ke)}, <span class="mono">fe₂ = ${nf(b.f2.fe)} cm²</span>. El ancho comprimido es el de la columna ensanchada (b₂ para M₁, b₁ para M₂).</li>
+      <li><b>Barras</b>: parrilla con separación ≤ 20 cm (pág. 34) y recubrimiento 5 cm. Según a₁: ${b.bar1 ? `<b>${b.bar1.n} Ø${b.bar1.d}</b> (${nf(b.bar1.A)} cm²) repartidas en ${b.a2 - 10} cm, c/${nf(b.bar1.sep, 1)} cm` : '—'}; según a₂: ${b.bar2 ? `<b>${b.bar2.n} Ø${b.bar2.d}</b> (${nf(b.bar2.A)} cm²) c/${nf(b.bar2.sep, 1)} cm` : '—'}. Se elige el Ø de 8 a 16 que da menos área con separación entre 10 y 20 cm (criterio de este cálculo).</li>
+      <li><b>Punzonado</b> (pág. 33): perímetro de la columna que apoya, <span class="mono">pc = ${pcT} = ${b.pc} cm</span>. <span class="mono">τp = N / (pc × h) = ${nf(N, 0)} / (${b.pc} × ${b.h}) = ${nf(b.tau)} kg/cm²</span> ${b.tau <= 8 ? '≤ 8: verifica.' : '<span class="no">&gt; 8: no verifica</span>, hay que subir h.'}</li>
+    </ol>
+    ${b.tipo !== 'c' ? `<p class="ojo">Con la base excéntrica, N y la reacción del suelo no están en la misma vertical: aparece un momento M = N × e que toma la columna (flexión compuesta${b.tipo === 'd' ? ' oblicua' : ''}, págs. 34 y 36). Este cálculo no redimensiona la columna para eso; se hace con el ábaco de la Tabla 10 (o 20), como el ejemplo de la pág. 78.</p>` : ''}`;
+}
+const selBase = cid => `<select data-base="${cid}" aria-label="Tipo de base de ${cid}">${Object.entries(tipoTxt).map(([k, t]) => `<option value="${k}"${(S.base[cid] || 'c') === k ? ' selected' : ''}>${t}</option>`).join('')}</select>`;
+
+/* ---------- tablas resumen ---------- */
+let TAB = 'vig', SEL = 'V2', RES = null;
+function tablaHTML(R) {
+  if (TAB === 'vig') {
+    const rows = R.G.BM.map(b => {
+      const cmax = Math.max(...b.corte.map(c => c.tau0));
+      return `<tr data-pz="${b.id}" class="${SEL === b.id ? 'sel' : ''}"><td>${b.id}${b.supuesta ? ' *' : ''}</td><td>${b.lv}</td><td class="r">${nf(b.L)}</td><td class="r">${b.sec.b0} × ${b.sec.d0}</td><td class="r">${f3(b.res.Mpos)}</td><td>${b.tramo ? (b.tramo.ok ? barTxt(b.tramo.bar) : '<span class="no">no alcanza</span>') : '—'}</td><td class="r">${b.apoyo ? '−' + f3(b.apoyo.M) : '—'}</td><td>${b.apoyo ? (b.apoyo.ok ? barTxt(b.apoyo.bar) : '<span class="no">no alcanza</span>') : '—'}</td><td class="r">${nf(cmax)}${cmax > 25 ? ' <span class="no">!</span>' : ''}</td></tr>`;
+    }).join('');
+    return `<div class="tblw"><table class="res"><thead><tr><th>Viga</th><th>Piso</th><th class="r">L (m)</th><th class="r">b₀ × d₀</th><th class="r">M tramo</th><th>Hierro abajo</th><th class="r">M apoyo</th><th>Hierro arriba</th><th class="r">τ₀ máx</th></tr></thead><tbody>${rows}</tbody></table></div><p class="fine">M en tm, τ₀ en kg/cm². * no está dibujada en el TP (ver Supuestos).</p>`;
+  }
+  if (TAB === 'col') {
+    const rows = Object.values(R.COL).map(c => `<tr data-pz="${c.id}" class="${SEL === c.id ? 'sel' : ''}"><td>${c.id}</td><td class="r">${f3(c.PA.N)}</td><td class="r">${c.PA.b} × ${c.PA.b}</td><td>${c.PA.bar.n} Ø${c.PA.bar.d}</td><td class="r">${f3(c.PB.N)}</td><td class="r">${c.PB.b} × ${c.PB.b}</td><td>${c.PB.bar.n} Ø${c.PB.bar.d}</td><td>Ø${c.PB.estr.d} c/${c.PB.estr.s}</td></tr>`).join('');
+    return `<div class="tblw"><table class="res"><thead><tr><th>Columna</th><th class="r">N PA (t)</th><th class="r">PA (cm)</th><th>Hierro PA</th><th class="r">N PB (t)</th><th class="r">PB (cm)</th><th>Hierro PB</th><th>Estribos PB</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+  }
+  const rows = Object.entries(R.BAS).map(([cid, b]) => { const id = 'B' + cid.slice(1); return `<tr data-pz="${id}" class="${SEL === id ? 'sel' : ''}"><td>${id}</td><td>${selBase(cid)}</td><td class="r">${f3(b.Nt)}</td><td class="r">${b.a1} × ${b.a2}</td><td class="r">${b.d}</td><td>${b.bar1 ? `${b.bar1.n} Ø${b.bar1.d}` : '—'} / ${b.bar2 ? `${b.bar2.n} Ø${b.bar2.d}` : '—'}</td><td class="r">${nf(b.tau)}${b.tau > 8 ? ' <span class="no">!</span>' : ''}</td></tr>`; }).join('');
+  return `<div class="tblw"><table class="res"><thead><tr><th>Base</th><th>Tipo</th><th class="r">N (t)</th><th class="r">a₁ × a₂ (cm)</th><th class="r">d (cm)</th><th>Parrilla a₁ / a₂</th><th class="r">τp</th></tr></thead><tbody>${rows}</tbody></table></div><p class="fine">σs = ${nf(S.sig)} kg/cm². Cambiá el tipo en la tabla o en la ficha de la base.</p>`;
+}
+function supuestosHTML(R) {
+  const L3 = R.RL.L3, L4q = S.q.L4;
+  return `<ul class="sup">
+    <li><b>Viga VE, que el TP no dibuja.</b> L2 es de una dirección (5,00 / 2,10 = 2,38) y salva 2,10 m de x = 1,10 a ${irA('V11')}; su borde junto a la escalera tiene que apoyar en algo. Se supone una viga entre ${irA('V2')} y ${irA('V4')}. La escalera (${irA('LE')}) apoya en V2 y V4, como en el TP (5 m de luz).</li>
+    <li><b>Esquina de V3 y V12 sin columna.</b> En el esquemático no hay columna en la esquina de arriba a la derecha de L3: se toma ${irA('V12')} con un voladizo de ${nf(S.dC5)} m desde ${irA('C5')}, y ${irA('V3')} apoyada en su punta. Lo mismo en PA con V103 y V111. C5 no está acotada: ${nf(S.dC5)} m medido a escala.</li>
+    <li><b>L2 y L3 no se toman continuas.</b> El TP las hace continuas y calcula L3 con la Tabla 3.2. La cátedra no toma continua una losa de una dirección con una de dos (Losas 1, diapositiva 9, regla 1): acá L2 va simplemente apoyada y L3 con la Tabla 3.1 (ε = ${nf(L3.eps, 3)}).</li>
+    <li><b>Planta alta</b>: L101 y L102 son continuas (luces 3,20 / 3,20 y 4,20 / 5,00 = 0,84, q iguales) y L102 y L103 también (2,80 / 3,20 = 0,88 y 5,00 / 5,00); L102 y L104 no (2,80 / 5,00 = 0,56). Tablas: L101 3.2.a, L102 3.4, L103 3.2, L104 3.1.</li>
+    <li><b>L4</b> con q = ${nf(L4q, 2)} kg/m²${Math.abs(L4q - 859.85) < .01 ? ' (el TP pone 913,85 porque pasa el 517 de las capas como 571)' : ''}; el muro va repartido en q, como lo hizo el TP.</li>
+    <li><b>Alturas</b>: ${nf(S.hPB)} m en PB y ${nf(S.hPA)} m en PA, que el TP no da. Son la longitud de pandeo de cada tramo de columna y su peso propio. No se incluye el tramo enterrado hasta la base.</li>
+    <li><b>Muros de planta alta sobre vigas de PB</b>: ${S.muros ? 'incluidos (0,20 m × altura de PA × 1,6 t/m³)' : 'no incluidos, como en el TP. Si los muros exteriores de PA apoyan en esas vigas, marcá la casilla de Datos: es carga real'}.</li>
+    <li><b>Vigas</b> con el criterio del material (sección d₀ = luz / 10, Tabla 4 de H-17, sección rectangular, corte de la clase). Las continuas son las que comparten columna con relación de luces ≥ 0,75: V8–V10, V9–V11, V2–V3, V4–V5 y sus iguales de PA. V13 y V14 no (2,80 / 5,00 = 0,56).</li>
+    <li><b>Columnas</b> a compresión centrada con el método ω; la de PB no se hace más chica que la de PA. <b>Bases</b> centradas salvo que elijas otra cosa.</li>
+  </ul>
+  <p class="fine">Controles: todo lo que cargan las vigas de los dos pisos (losas, peso propio${S.muros ? ', muros' : ''}) suma ${f3(R.tot.cargado)} t y lo que les llega a las columnas desde las vigas, ${f3(R.tot.bases)} t: ${Math.abs(R.tot.cargado - R.tot.bases) < 1e-6 ? '<span class="ok">iguales, no se pierde carga en el camino</span>' : '<span class="no">no coinciden</span>'}. ${R.tot.sueltos.length ? `<span class="no">Bordes de losa sin viga: ${R.tot.sueltos.join('; ')}</span>` : 'Todos los bordes de losa que cargan tienen una viga abajo.'} Las reacciones de las Tablas 3.x suman casi exacto q × área de cada losa (diferencias de menos del 0,6 %, por el redondeo de los coeficientes; se ve en la ficha de cada losa).</p>`;
+}
+
+/* ---------- pantalla ---------- */
+/* controles: lo cargado en las vigas llega entero a las columnas, y cada borde de losa que carga tiene viga abajo */
+function totales(R) {
+  let cargado = 0, losas = 0;
+  for (const b of R.G.BM) for (const u of b.uni) cargado += u.q * (u.x2 - u.x1);
+  let bases = 0; for (const c of Object.values(R.COL)) bases += sumR(c.vig.PA) + sumR(c.vig.PB);
+  const sueltos = [];
+  for (const s of R.G.SL) for (const it of R.RL[s.id].items) {
+    const largo = it.line.hi - it.line.lo; let cub = 0;
+    for (const b of R.G.BM) if (b.lv === s.lv) for (const u of b.uni) if (u.de === s.id && b.ln.ax === it.line.ax && Math.abs(b.ln.at - it.line.at) < 1e-6) cub += u.x2 - u.x1;
+    losas += it.q * largo;
+    if (Math.abs(cub - largo) > 1e-6) sueltos.push(`${s.id} borde ${SIDE[it.side]}: ${nf(cub)} de ${nf(largo)} m`);
+  }
+  return { cargado, bases, losas, sueltos };
+}
+function ficha(R) {
+  const el = $('#tp-ficha');
+  if (R.BMI[SEL]) el.innerHTML = fichaViga(R, R.BMI[SEL]);
+  else if (R.COL[SEL]) el.innerHTML = fichaCol(R, R.COL[SEL]);
+  else if (/^B\d+$/.test(SEL) && R.COL['C' + SEL.slice(1)]) el.innerHTML = fichaBase(R, SEL);
+  else if (R.RL[SEL]) el.innerHTML = fichaLosa(R, SEL);
+  else el.innerHTML = '<p>Elegí una pieza en la planta o en las tablas.</p>';
+}
+function fichaLosa(R, id) {
+  const s = R.G.SL.find(z => z.id === id), r = R.RL[id];
+  const filas = r.items.map(it => `<tr><td>${SIDE[it.side]}</td><td class="mono">${it.calc}</td><td class="r">${f3(it.q)}</td></tr>`).join('');
+  return `<div class="head"><h2>Losa ${id}</h2><span class="chip">${s.uso}</span></div>
+    <p>q = ${f3(s.q)} t/m² (del TP). ${r.kind === '2D' ? `Dos direcciones, Tabla ${s.t}, ε = Lx / Ly = ${nf(s.x[1] - s.x[0])} / ${nf(s.y[1] - s.y[0])} = ${nf(r.eps, 3)}.` : r.kind === '1D' ? `Una dirección, luz ${nf(r.L)} m.` : `Voladizo de ${nf(r.L)} m con P = ${f3(s.P)} t en la punta: M = ${f3(r.M)} tm/m.`}</p>
+    <div class="tblw"><table class="res"><thead><tr><th>Borde</th><th>Cuenta</th><th class="r">Carga a la viga (t/m)</th></tr></thead><tbody>${filas}</tbody></table></div>
+    ${r.kind === '2D' ? `<p class="fine">Control: las cuatro reacciones suman ${f3(r.sum)} t; la losa carga q × Lx × Ly = ${f3(r.tot)} t.</p>` : ''}`;
+}
+function dibujar() {
+  let R;
+  try { R = calcular(); R.tot = totales(R); }
+  catch (e) { $('#tp-ficha').innerHTML = `<p class="no">Error en el cálculo: ${e.message}</p>`; console.error(e); return; }
+  RES = R;
+  $('#tp-plantas').innerHTML = `<figure><figcaption>Planta baja · entrepiso</figcaption>${plantaSVG(R, 'PB', SEL)}</figure><figure><figcaption>Planta alta · cubierta</figcaption>${plantaSVG(R, 'PA', SEL)}</figure>`;
+  $('#tp-tabla').innerHTML = tablaHTML(R);
+  $$('.tabs [data-tab]').forEach(b => b.setAttribute('aria-pressed', b.dataset.tab === TAB));
+  ficha(R);
+  $('#tp-sup').innerHTML = supuestosHTML(R);
+  window.__tp = R;
+}
+function elegir(id, scroll) {
+  SEL = id;
+  if (/^V/.test(id)) TAB = 'vig'; else if (/^C/.test(id)) TAB = 'col'; else if (/^B/.test(id)) TAB = 'bas';
+  dibujar();
+  if (scroll) requestAnimationFrame(() => $('#tp-ficha-s').scrollIntoView({ behavior: 'smooth', block: 'start' }));
+}
+/* datos */
+function llenarDatos() {
+  $$('#tp-datos [data-k]').forEach(el => { const k = el.dataset.k; if (el.type === 'checkbox') el.checked = !!S[k]; else el.value = S[k]; });
+  $('#tp-qs').innerHTML = Object.keys(QTP).map(k => `<label>${k}<br><input type="number" step="0.01" min="50" max="3000" data-q="${k}" value="${S.q[k]}"></label>`).join('');
+}
+$('#tp-datos').addEventListener('change', e => {
+  const el = e.target, k = el.dataset.k; if (!k) return;
+  if (el.type === 'checkbox') S[k] = el.checked;
+  else if (el.tagName === 'SELECT') S[k] = el.value;
+  else { const v = parseFloat(el.value); if (!isFinite(v) || v < +el.min || v > +el.max) { el.value = S[k]; return; } S[k] = v; }
+  guardar(); dibujar();
+});
+$('#tp-qs').addEventListener('change', e => {
+  const k = e.target.dataset.q; if (!k) return; const v = parseFloat(e.target.value);
+  if (!isFinite(v) || v < 50 || v > 3000) { e.target.value = S.q[k]; return; }
+  S.q[k] = v; guardar(); dibujar();
+});
+$('#tp-reset').addEventListener('click', () => { S = DEF(); guardar(); llenarDatos(); dibujar(); });
+$('.tabs').addEventListener('click', e => { const b = e.target.closest('[data-tab]'); if (!b) return; TAB = b.dataset.tab; dibujar(); });
+const tp = RAIZ;
+tp.addEventListener('change', e => { const s = e.target.closest('select[data-base]'); if (!s) return; S.base[s.dataset.base] = s.value; guardar(); dibujar(); });
+tp.addEventListener('click', e => {
+  if (e.target.closest('select')) return;
+  const a = e.target.closest('a[data-ir]'); if (a) { e.preventDefault(); history.replaceState(null, '', '#tp-' + a.dataset.ir); elegir(a.dataset.ir, true); return; }
+  const g = e.target.closest('[data-pz]'); if (!g) return;
+  history.replaceState(null, '', '#tp-' + g.dataset.pz); elegir(g.dataset.pz, true);
+});
+tp.addEventListener('keydown', e => { if (e.key !== 'Enter' && e.key !== ' ') return; const g = e.target.closest('g[data-pz]'); if (!g) return; e.preventDefault(); history.replaceState(null, '', '#tp-' + g.dataset.pz); elegir(g.dataset.pz, true); });
+addEventListener('hashchange', () => { const m = /^#tp-([A-Za-z0-9]+)$/.exec(location.hash); if (m && m[1] !== SEL) elegir(m[1], true); });
+{ const m = /^#tp-([A-Za-z0-9]+)$/.exec(location.hash); if (m) SEL = m[1]; }
+window.__tpCalc = { TABR, T4, T4KX, T7, omega, feCol, resolver, disenoBase, disenoCol, barrasBase, totales, calcular, setSig: v => { S.sig = v; } };
+llenarDatos();
+dibujar();
+})();
+</script>
 </div>
 <script>window.__view();</script>
 <script>window.TT_CONF = { roots: ["#v-glos .wrap", "#v-form #formulas", "#v-guia main.wrap", "#v-ent main.steps", "#v-ent .plan-card", "#v-3d #panel", "#v-3d #legend"], exclude: "#gloss, #v-form .indice, #f-buscar" };</script>
