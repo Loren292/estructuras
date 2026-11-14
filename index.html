@@ -5214,6 +5214,7 @@ drawPlan(); render();
       <label>Altura de piso de PA (m)<input type="number" step="0.05" min="2" max="5" data-k="hPA"><small>Supuesta igual a la de PB</small></label>
       <label>De la esquina de V3 a C5 (m)<input type="number" step="0.05" min="0.3" max="4.5" data-k="dC5"><small>No está acotado: ≈ 1,25 m medido a escala en el esquemático (pág. 2)</small></label>
       <label>Hormigón de columnas y bases<select data-k="horm"><option value="H-17">H-17 (βR 140 kg/cm²)</option><option value="H-21">H-21 (βR 175 kg/cm²), el que dice el TP</option></select><small>Apunte, pág. 22. Vigas y bases usan la Tabla 4 del material, que es la de H-17 (la misma que usó el TP)</small></label>
+      <label>Ancho b₀ de todas las vigas (cm)<input type="number" step="1" min="10" max="60" data-k="b0all" data-vacio="1" placeholder="automático"><small>Vacío: el primer múltiplo de 5 ≥ d₀ / 3. La clase adopta b₀ con el ancho del muro que va abajo (18 cm en su ejemplo) dentro de d₀ / 3 a d₀ / 2. Cada viga se puede cambiar en su ficha</small></label>
       <label>Tensión admisible del suelo (kg/cm²)<input type="number" step="0.1" min="0.3" max="10" data-k="sig"><small>2,0 es la de la tosca para predimensionar (apunte, pág. 25); el valor real sale del estudio de suelos</small></label>
     </div>
     <div class="muros" id="tp-muros"></div>
@@ -5304,7 +5305,7 @@ function tabla4(Mtcm, b, h) {
 
 /* ---------- datos (los del TP por defecto) ---------- */
 const QTP = { L1: 681, L2: 781, LE: 1014.6, L3: 681, L4: 859.85, L5: 1053, L101: 619, L102: 619, L103: 619, L104: 619 };
-const DEF = () => ({ hPB: 2.6, hPA: 2.6, dC5: 1.25, horm: 'H-21', sig: 2.0, murosV: [], q: { ...QTP }, base: {} });
+const DEF = () => ({ hPB: 2.6, hPA: 2.6, dC5: 1.25, horm: 'H-21', sig: 2.0, murosV: [], q: { ...QTP }, base: {}, b0all: '', sec: {}, colb: {}, basm: {} });
 /* muros exteriores de planta alta que apoyan sobre vigas de PB (plano de planta alta, pág. 1 del TP) */
 const MUROS_PA = ['V1', 'V8', 'V10', 'V13', 'V3', 'V12', 'V5', 'V14', 'V7'];
 const muroNuevo = v => ({ v, e: .2, h: S.hPA, g: 1.6, x1: '', x2: '' });
@@ -5313,7 +5314,7 @@ let S = DEF();
 try {
   const g = JSON.parse(localStorage.getItem(KS));
   if (g && typeof g === 'object') {
-    S = { ...DEF(), ...g, q: { ...QTP, ...(g.q || {}) }, base: { ...(g.base || {}) }, murosV: Array.isArray(g.murosV) ? g.murosV : [] };
+    S = { ...DEF(), ...g, q: { ...QTP, ...(g.q || {}) }, base: { ...(g.base || {}) }, murosV: Array.isArray(g.murosV) ? g.murosV : [], sec: { ...(g.sec || {}) }, colb: { ...(g.colb || {}) }, basm: { ...(g.basm || {}) } };
     if (g.muros === true && !Array.isArray(g.murosV)) S.murosV = MUROS_PA.map(muroNuevo);
     delete S.muros;
   }
@@ -5440,8 +5441,10 @@ function calcular() {
   /* sección (D4) por cadena: d0 = luz mayor entre apoyos / 10, redondeado a 5 cm; b0 = primer múltiplo de 5 ≥ d0 / 3 */
   for (const b of G.BM) {
     const tramos = b.chain.flatMap(id => { const x = BMI[id]; const [s1, s2] = x.sup.map(p => p[0]); return [s2 - s1, s1, x.L - s2].filter(v => v > 1e-6); });
-    const Lmax = Math.max(...tramos), d0 = up5(Lmax * 10), b0 = up5(d0 / 3);
-    b.sec = { Lmax, d0, b0, h: d0 - MAT.rec, pp: b0 / 100 * d0 / 100 * MAT.ha };
+    const Lmax = Math.max(...tramos), d0a = up5(Lmax * 10), ov = S.sec[b.chain[0]] || {};
+    const d0 = +ov.d0 || d0a, b0a = up5(d0 / 3), b0 = +ov.b0 || +S.b0all || b0a;
+    b.sec = { Lmax, d0, b0, d0a, b0a, fijoD: !!+ov.d0, fijoB: !!+ov.b0 ? 'viga' : (+S.b0all ? 'todas' : ''), h: d0 - MAT.rec, pp: b0 / 100 * d0 / 100 * MAT.ha, key: b.chain[0] };
+    b.sec.rango = b0 >= d0 / 3 - 1e-9 && b0 <= d0 / 2 + 1e-9;
   }
   /* cargas repartidas de cada viga */
   for (const b of G.BM) {
@@ -5514,12 +5517,13 @@ function calcular() {
   /* columnas: de arriba hacia abajo (apunte, pág. 20: vigas + peso propio + lo que baja del piso de arriba) */
   const h = HORM[S.horm], COL = {};
   for (const id of Object.keys(G.COLS)) {
-    const pa = disenoCol(sumR(colN[id].PA), 0, S.hPA, h, 20);
-    const pb = disenoCol(sumR(colN[id].PB), pa.Nbot, S.hPB, h, pa.b);
+    const fx = S.colb[id] || {};
+    const pa = disenoCol(sumR(colN[id].PA), 0, S.hPA, h, 20, +fx.PA || 0);
+    const pb = disenoCol(sumR(colN[id].PB), pa.Nbot, S.hPB, h, pa.b, +fx.PB || 0);
     COL[id] = { id, xy: G.COLS[id], vig: colN[id], PA: pa, PB: pb, N: pb.Nbot };
   }
   const BAS = {};
-  for (const id of Object.keys(G.COLS)) BAS[id] = disenoBase(COL[id].N, COL[id].PB.b, S.base[id] || 'c');
+  for (const id of Object.keys(G.COLS)) BAS[id] = disenoBase(COL[id].N, COL[id].PB.b, S.base[id] || 'c', S.basm[id] || {});
   return { G, RL, BMI, COL, BAS, colN, orden };
 }
 const sumR = arr => arr.reduce((a, x) => a + x.R, 0);
@@ -5568,9 +5572,10 @@ function corte(b, k, lado) {
 /* fórmula (1) del apunte, pág. 23: N ν ω = Fb βR + fe βs, despejando fe (N en t, b en cm) */
 const feCol = (N, b, w, bR) => (N * 1000 * MAT.nu * w - b * b * bR) / MAT.betaS;
 /* columna: método ω. Nvig: lo que le pasan las vigas de este piso; Narr: lo que baja del piso de arriba */
-function disenoCol(Nvig, Narr, hp, H, bmin) {
+function disenoCol(Nvig, Narr, hp, H, bmin, bFix) {
   const sigB = H.bk / 2, N0 = Nvig + Narr, Fb0 = N0 * 1000 / sigB;
-  let b = Math.max(20, near5(Math.sqrt(Fb0)), bmin), it = [];
+  const bAuto = Math.max(20, near5(Math.sqrt(Fb0)), bmin);
+  let b = bFix || bAuto, it = [];
   let r;
   for (let k = 0; k < 12; k++) {
     const pp = (b / 100) * (b / 100) * hp * MAT.ha, N = N0 + pp, Fb = b * b, lam = hp * 100 / b, om = omega(lam);
@@ -5578,10 +5583,15 @@ function disenoCol(Nvig, Narr, hp, H, bmin) {
     const feC = feCol(N, b, w, H.bR), mu = feC / Fb * 100;
     r = { b, pp, N, Nvig, Narr, Fb, lam, om, w, feC, mu, sigB, Fb0, hp };
     it.push({ b, mu, w: om.w });
-    if (om.w && mu <= 5) break;
+    if (bFix || (om.w && mu <= 5)) break;
     b += 5;
   }
-  r.iter = it;
+  r.iter = it; r.fijo = !!bFix; r.bAuto = bAuto;
+  r.ok = !!r.om.w && r.mu <= 5 && r.b >= 20;
+  r.avisos = [];
+  if (r.b < 20) r.avisos.push('lado menor que 20 cm, el mínimo del apunte (pág. 20)');
+  if (!r.om.w) r.avisos.push('λ mayor que 40: fuera de la Tabla 7');
+  else if (r.mu > 5) r.avisos.push(`cuantía ${nf(r.mu, 1)} %, más del 5 % que permite el apunte: la sección es chica`);
   r.feMin = .008 * r.Fb;
   r.fe = Math.max(r.feC, r.feMin);
   r.porMin = r.feC < r.feMin;
@@ -5595,11 +5605,16 @@ function disenoCol(Nvig, Narr, hp, H, bmin) {
 }
 
 /* base aislada: tipo 'c' centrada, 'e' excéntrica, 'd' doblemente excéntrica (apunte, págs. 31 a 37 y 75 a 79) */
-function disenoBase(Nt, c, tipo) {
+function disenoBase(Nt, c, tipo, fx = {}) {
   const N = Nt * 1000, S = 1.1 * N / S_sig(), r = { tipo, Nt, N, c, S };
   if (tipo === 'e') { r.a1 = up5(Math.sqrt(S / 2.5)); r.a2 = up10(S / r.a1); r.b1 = c + 2.5; r.b2 = c + 5; r.pc = 3 * c; }
   else if (tipo === 'd') { r.a1 = r.a2 = up10(Math.sqrt(S)); r.b1 = r.b2 = c + 5; r.pc = 2 * c; }
   else { r.a1 = r.a2 = up10(Math.sqrt(S)); r.b1 = r.b2 = c + 5; r.pc = 4 * c; }
+  r.a1a = r.a1; r.a2a = r.a2;
+  if (+fx.a1) { r.a1 = +fx.a1; if (tipo !== 'e' && !+fx.a2) r.a2 = r.a1; }
+  if (+fx.a2) r.a2 = +fx.a2;
+  r.fijoA = !!(+fx.a1 || +fx.a2); r.fijoD = !!+fx.d;
+  r.sigR = 1.1 * N / (r.a1 * r.a2);
   const a1 = r.a1 / 100, a2 = r.a2 / 100, b1 = r.b1 / 100, b2 = r.b2 / 100;
   r.M1 = tipo === 'c' ? Nt * (a1 - b1) ** 2 / (8 * a1) : Nt * (a1 - b1) ** 2 / (2 * a1);
   r.M2 = tipo === 'e' || tipo === 'c' ? Nt * (a2 - b2) ** 2 / (8 * a2) : Nt * (a2 - b2) ** 2 / (2 * a2);
@@ -5609,14 +5624,23 @@ function disenoBase(Nt, c, tipo) {
     const Mm = Math.max(r.M1 * 100 / r.b2, r.M2 * 100 / r.b1);
     r.hKh = 13.83 * Math.sqrt(Mm); r.h = Math.max(up5(r.hKh), up5(r.hPunz), 15 - MAT.recB); r.d = r.h + MAT.recB; r.comoH = 'kh';
   }
+  r.dAuto = r.d;
+  if (r.fijoD) { r.d = +fx.d; r.h = r.d - MAT.recB; }
   for (let k = 0; k < 20; k++) {
     r.f1 = tabla4(r.M1 * 100, r.b2, r.h); r.f2 = tabla4(r.M2 * 100, r.b1, r.h);
-    if (r.f1.ok && r.f2.ok) break;
+    if ((r.f1.ok && r.f2.ok) || r.fijoD) break;
     r.h += 5; r.d += 5; r.subio = true;
   }
   r.do = Math.max(15, r.d / 3);
   r.tau = N / (r.pc * r.h);
-  r.bar1 = barrasBase(r.f1.fe, r.a2); r.bar2 = barrasBase(r.f2.fe, r.a1);
+  r.bar1 = r.f1.ok ? barrasBase(r.f1.fe, r.a2) : null; r.bar2 = r.f2.ok ? barrasBase(r.f2.fe, r.a1) : null;
+  r.avisos = [];
+  if (r.sigR > S_sig() + 1e-9) r.avisos.push(`la base es chica: el suelo recibe 1,1 N / (a₁ × a₂) = ${nf(r.sigR)} kg/cm², más que σs = ${nf(S_sig())}`);
+  if (r.a1 < r.b1 || r.a2 < r.b2) r.avisos.push('la base es más chica que la columna con su ensanche');
+  if (!r.f1.ok || !r.f2.ok) r.avisos.push('con esa altura kh queda fuera de la Tabla 4: hay que subir d');
+  if (r.tau > MAT.tauP + 1e-9) r.avisos.push(`punzonado: τp = ${nf(r.tau)} kg/cm², más que 8: hay que subir d`);
+  if (r.d < 15) r.avisos.push('d menor que 15 cm, el mínimo del borde (pág. 32)');
+  r.ok = !r.avisos.length;
   return r;
 }
 function S_sig() { return S.sig; }
@@ -5686,6 +5710,20 @@ function vigaSVG(b) {
   return `<svg class="diag" viewBox="0 0 ${W} ${yM + hM + 30}" role="img" aria-label="Cargas, corte y momento de ${b.id}">${s}</svg>`;
 }
 
+/* ---------- medidas que elige el usuario (vacío = lo que calcula) ---------- */
+const barCol = d => d.bar ? `${d.bar.n} Ø${d.bar.d}` : '<span class="no">no alcanza</span>';
+const avisoHTML = l => l && l.length ? `<p class="ojo"><b>No verifica:</b> ${l.join('; ')}.</p>` : '';
+function medidaIn(grupo, id, campo, valor, auto, rango, etq) {
+  return `<label>${etq}<input type="number" step="1" min="${rango[0]}" max="${rango[1]}" data-ov="${grupo}|${id}|${campo}" value="${valor || ''}" placeholder="${auto}"></label>`;
+}
+const medidasCaja = (titulo, campos, nota) => `<details class="leer med"${campos.includes('value=""') && !/value="\d/.test(campos) ? '' : ' open'}><summary>${titulo}</summary><div class="datos">${campos}</div><p class="fine">${nota} Vacío = lo que calcula. Si una medida no alcanza, la ficha lo avisa en vez de agrandarla.</p></details>`;
+RAIZ.addEventListener('change', e => {
+  const el = e.target.closest('[data-ov]'); if (!el) return;
+  const [g, id, c] = el.dataset.ov.split('|'), T = { sec: S.sec, colb: S.colb, basm: S.basm }[g];
+  if (el.value === '') { if (T[id]) { delete T[id][c]; if (!Object.keys(T[id]).length) delete T[id]; } }
+  else { const v = parseFloat(el.value); if (!isFinite(v) || v < +el.min || v > +el.max) { el.value = (T[id] || {})[c] || ''; return; } (T[id] = T[id] || {})[c] = v; }
+  guardar(); dibujar();
+});
 /* ---------- fichas ---------- */
 const irA = id => `<a href="#tp-${id}" data-ir="${id}">${id}</a>`;
 function fichaViga(R, b) {
@@ -5706,7 +5744,7 @@ function fichaViga(R, b) {
   return `<div class="head"><h2>Viga ${b.id}</h2><span class="chip">${lvTxt}</span>${b.supuesta ? '<span class="chip">no está en el TP</span>' : ''}</div>
     ${b.supuesta ? `<p class="ojo">El TP no dibuja esta viga, pero L2 es de una dirección con luz 2,10 m (de x = 1,10 a V11) y su borde izquierdo, junto a la escalera, tiene que apoyar en algo. Se supone una viga de 1,10 a 1,10 entre ${irA('V2')} y ${irA('V4')}. Consultalo en clase: si va un muro o la losa se resuelve de otra forma, cambian V2, V4 y las columnas C3, C4, C6 y C7.</p>` : ''}
     <div class="resumen"><b>Resultado</b><ul>
-      <li>Sección b₀ × d₀ = ${sec.b0} × ${sec.d0} cm (h = ${sec.h} cm).</li>
+      <li>Sección b₀ × d₀ = ${sec.b0} × ${sec.d0} cm (h = ${sec.h} cm)${sec.fijoB || sec.fijoD ? ', elegida en los datos' : ''}.</li>
       ${b.tramo ? `<li>Tramo: M = ${f3(r.Mpos)} tm → ${b.tramo.ok ? barTxt(b.tramo.bar) : '<span class="no">no alcanza la sección</span>'}.</li>` : ''}
       ${b.apoyo ? `<li>Apoyo ${b.apoyoDonde}: M = −${f3(b.apoyo.M)} tm → ${b.apoyo.ok ? barTxt(b.apoyo.bar) : '<span class="no">no alcanza la sección</span>'} arriba.</li>` : ''}
       <li>Reacciones: ${b.sup.map(([s, to], k) => `${to} ${f3(r.R[k])} t`).join(' · ')}.</li>
@@ -5715,6 +5753,8 @@ function fichaViga(R, b) {
     <h3>1 · Dónde está y en qué apoya</h3>
     <p>Largo ${nf(b.L)} m, apoyada en ${apoyos}. ${cad}</p>
     <h3>2 · Sección (predimensionado)</h3>
+    ${medidasCaja(`Cambiar la sección${b.chain.length > 1 ? ` (vale para ${b.chain.join(' y ')}, que son continuas)` : ''}`, medidaIn('sec', sec.key, 'b0', (S.sec[sec.key] || {}).b0, sec.b0a, [10, 60], 'b₀ (cm)') + medidaIn('sec', sec.key, 'd0', (S.sec[sec.key] || {}).d0, sec.d0a, [15, 150], 'd₀ (cm)'), `Por ejemplo, b₀ = 18 cm si va un muro de 18 abajo (como el ejemplo de la clase). Para todas las vigas a la vez: "Ancho b₀ de todas las vigas" en Datos.`)}
+    ${sec.fijoB || sec.fijoD ? `<p class="${sec.rango ? 'fine' : 'ojo'}">Sección elegida: ${sec.fijoB ? `b₀ = ${sec.b0} cm (${sec.fijoB === 'todas' ? 'el de todas las vigas, en Datos' : 'de esta viga'}; el automático daba ${sec.b0a})` : ''}${sec.fijoB && sec.fijoD ? ' y ' : ''}${sec.fijoD ? `d₀ = ${sec.d0} cm (el automático daba ${sec.d0a})` : ''}. ${sec.rango ? `Está dentro de lo que pide la clase, d₀ / 3 ≤ b₀ ≤ d₀ / 2 (${nf(sec.d0 / 3, 1)} a ${nf(sec.d0 / 2, 1)} cm).` : `<b>Fuera de lo que pide la clase</b>: d₀ / 3 ≤ b₀ ≤ d₀ / 2 = ${nf(sec.d0 / 3, 1)} a ${nf(sec.d0 / 2, 1)} cm. Con b₀ = ${sec.b0} cm entra si d₀ va de ${nf(2 * sec.b0, 0)} a ${nf(3 * sec.b0, 0)} cm (se cambia acá arriba). La clase dice "aproximadamente"; se calcula igual.`} Lo que sigue usa esta sección.</p>` : ''}
     <p>Con el criterio que usa el material para las vigas de la clase: <span class="mono">d₀ = luz / 10 = ${nf(sec.Lmax)} m / 10 = ${nf(sec.Lmax * 10, 1)} cm → ${sec.d0} cm</span> (la luz mayor entre apoyos${b.chain.length > 1 ? ' de las dos vigas continuas, que van con la misma sección' : ''}), <span class="mono">b₀ ≥ d₀ / 3 = ${nf(sec.d0 / 3, 1)} → ${sec.b0} cm</span> (el primer múltiplo de 5; la clase deja elegir entre d₀ / 3 y d₀ / 2 = ${nf(sec.d0 / 2, 1)} cm, por ejemplo con el ancho del muro que va abajo), <span class="mono">h = d₀ − 3 = ${sec.h} cm</span>. Peso propio: <span class="mono">${nf(sec.b0 / 100)} × ${nf(sec.d0 / 100)} × 2,4 = ${f3(sec.pp)} t/m</span>.</p>
     <h3>3 · Cargas</h3>
     <p>Cada losa le pasa la reacción de su borde. Las de dos direcciones salen de las columnas de reacciones de las Tablas 3.x (coeficiente × q × luz menor², la reacción total del borde, dividida por su largo); las de una dirección, q × L / 2; el voladizo, q × L + P.</p>
@@ -5739,16 +5779,19 @@ function fichaCol(R, c) {
     return `<h3>${lv === 'PA' ? 'Tramo de planta alta' : 'Tramo de planta baja'}</h3>
     <ol class="steps">
       <li><b>Carga</b>: ${vig.length ? vig.map(v => `${irA(v.de)} ${f3(v.R)} t`).join(' + ') : 'ninguna viga de este piso'}${d.Narr ? ` + lo que baja de PA ${f3(d.Narr)} t` : ''} = ${f3(d.Nvig + d.Narr)} t; más su peso propio <span class="mono">${nf(d.b / 100)} × ${nf(d.b / 100)} × ${nf(hp)} × 2,4 = ${f3(d.pp)} t</span> → <b>N = ${f3(d.N)} t</b>.</li>
-      <li><b>Predimensionado</b> (apunte, pág. 23): <span class="mono">σ'b = σ'bk / 2 = ${H.bk} / 2 = ${d.sigB} kg/cm²</span>; <span class="mono">Fb = N / σ'b = ${nf((d.Nvig + d.Narr) * 1000, 0)} / ${d.sigB} = ${nf(d.Fb0, 0)} cm²</span> → lado √Fb = ${nf(Math.sqrt(d.Fb0), 1)} cm → <b>${d.b} × ${d.b} cm</b>${d.iter.length > 1 ? ` (se agrandó: con ${d.iter[0].b} cm la cuantía daba ${nf(d.iter[0].mu, 1)} %, más del 5 %)` : ''}${lv === 'PB' && d.b === c.PA.b && Math.sqrt(d.Fb0) < c.PA.b - 2.5 ? ' (no más chica que la de arriba)' : ''}. Lado mínimo 20 cm (pág. 20); redondeado a 5 cm, criterio de este cálculo.</li>
+      <li><b>Predimensionado</b> (apunte, pág. 23): <span class="mono">σ'b = σ'bk / 2 = ${H.bk} / 2 = ${d.sigB} kg/cm²</span>; <span class="mono">Fb = N / σ'b = ${nf((d.Nvig + d.Narr) * 1000, 0)} / ${d.sigB} = ${nf(d.Fb0, 0)} cm²</span> → lado √Fb = ${nf(Math.sqrt(d.Fb0), 1)} cm → <b>${d.b} × ${d.b} cm</b>${d.iter.length > 1 ? ` (se agrandó: con ${d.iter[0].b} cm la cuantía daba ${nf(d.iter[0].mu, 1)} %, más del 5 %)` : ''}${lv === 'PB' && d.b === c.PA.b && Math.sqrt(d.Fb0) < c.PA.b - 2.5 ? ' (no más chica que la de arriba)' : ''}. Lado mínimo 20 cm (pág. 20); redondeado a 5 cm, criterio de este cálculo.${d.fijo ? ` <b>Elegido en los datos: ${d.b} × ${d.b} cm</b>; lo que sigue usa ese lado.` : ''}</li>
       <li><b>Esbeltez</b>: <span class="mono">λ = Sk / b = ${nf(hp * 100, 0)} / ${d.b} = ${nf(d.lam, 1)}</span> (Sk = altura de piso, k = 1) → Tabla 7: ${d.om.txt}.</li>
-      <li><b>Acero</b> (fórmula 1): <span class="mono">fe = (N × ν × ω − Fb × βR) / βs = (${nf(d.N * 1000, 0)} × 2,1 × ${f3(d.w)} − ${nf(d.Fb, 0)} × ${H.bR}) / 4200 = ${nf(d.feC)} cm²</span>${d.porMin ? `; da menos que la cuantía mínima, 0,8 % × ${nf(d.Fb, 0)} = ${nf(d.feMin)} cm², que es la que manda` : ` (cuantía ${nf(d.mu, 2)} %, entre 0,8 y 5 %)`} → <b>${d.bar ? `${d.bar.n} Ø${d.bar.d} (${nf(d.bar.A)} cm²)` : 'no entra'}</b>; estribos Ø${d.estr.d} c/${d.estr.s} cm (el menor entre el lado, ${d.b} cm, y 12 Ø = ${nf(12 * d.bar.d / 10, 1)} cm).</li>
+      <li><b>Acero</b> (fórmula 1): <span class="mono">fe = (N × ν × ω − Fb × βR) / βs = (${nf(d.N * 1000, 0)} × 2,1 × ${f3(d.w)} − ${nf(d.Fb, 0)} × ${H.bR}) / 4200 = ${nf(d.feC)} cm²</span>${d.porMin ? `; da menos que la cuantía mínima, 0,8 % × ${nf(d.Fb, 0)} = ${nf(d.feMin)} cm², que es la que manda` : ` (cuantía ${nf(d.mu, 2)} %, entre 0,8 y 5 %)`} → <b>${d.bar ? `${d.bar.n} Ø${d.bar.d} (${nf(d.bar.A)} cm²)` : 'no alcanzan 8 Ø20: la sección es chica'}</b>${d.bar ? `; estribos Ø${d.estr.d} c/${d.estr.s} cm (el menor entre el lado, ${d.b} cm, y 12 Ø = ${nf(12 * d.bar.d / 10, 1)} cm)` : ''}.</li>
     </ol>`;
   };
+  const fx = S.colb[c.id] || {};
   return `<div class="head"><h2>Columna ${c.id}</h2><span class="chip">${S.horm}</span></div>
+    ${avisoHTML([...c.PA.avisos.map(a => 'PA: ' + a), ...c.PB.avisos.map(a => 'PB: ' + a)])}
     <div class="resumen"><b>Resultado</b><ul>
-      <li>Planta alta: ${c.PA.b} × ${c.PA.b} cm, ${c.PA.bar.n} Ø${c.PA.bar.d}, estribos Ø${c.PA.estr.d} c/${c.PA.estr.s}; N = ${f3(c.PA.N)} t.</li>
-      <li>Planta baja: ${c.PB.b} × ${c.PB.b} cm, ${c.PB.bar.n} Ø${c.PB.bar.d}, estribos Ø${c.PB.estr.d} c/${c.PB.estr.s}; N = ${f3(c.PB.N)} t.</li>
+      <li>Planta alta: ${c.PA.b} × ${c.PA.b} cm, ${barCol(c.PA)}${c.PA.estr ? `, estribos Ø${c.PA.estr.d} c/${c.PA.estr.s}` : ''}; N = ${f3(c.PA.N)} t.</li>
+      <li>Planta baja: ${c.PB.b} × ${c.PB.b} cm, ${barCol(c.PB)}${c.PB.estr ? `, estribos Ø${c.PB.estr.d} c/${c.PB.estr.s}` : ''}; N = ${f3(c.PB.N)} t.</li>
       <li>A la base ${irA('B' + c.id.slice(1))} baja <b>${f3(c.N)} t</b>.</li></ul></div>
+    ${medidasCaja('Cambiar el lado de la columna', medidaIn('colb', c.id, 'PA', fx.PA, c.PA.bAuto, [15, 80], 'Lado en PA (cm)') + medidaIn('colb', c.id, 'PB', fx.PB, Math.max(c.PB.bAuto, c.PA.b), [15, 80], 'Lado en PB (cm)'), 'Columna cuadrada de ese lado. Cambia su peso propio, la esbeltez y la armadura, y la base de abajo.')}
     <p>La columna junta lo que le pasan las vigas que llegan a ella, su peso propio y lo que baja del piso de arriba (apunte, pág. 20). Se calcula de arriba hacia abajo. Método ω: <span class="mono">N × ν × ω = Fb × βR + fe × βs</span>, con ν = 2,1, βR = ${H.bR} kg/cm² (${S.horm}) y βs = 4200 kg/cm² (apunte, págs. 22 y 23).</p>
     ${bloque('PA', c.PA)}${bloque('PB', c.PB)}
     <p class="fine">Compresión centrada: no incluye el momento que le pasarían una base excéntrica o las vigas que apoyan de un solo lado. Si su base es excéntrica, la columna trabaja a flexión compuesta y se dimensiona con el ábaco de la Tabla 10 (apunte, pág. 78), que este cálculo no hace.</p>`;
@@ -5760,17 +5803,19 @@ function fichaBase(R, id) {
   return `<div class="head"><h2>Base ${id}</h2><span class="chip">${tipoTxt[b.tipo]}</span><span class="chip">bajo ${cid}</span></div>
     <div class="resumen"><b>Resultado</b><ul>
       <li>Planta ${b.a1} × ${b.a2} cm; d = ${b.d} cm (h = ${b.h} cm), d₀ = ${nf(b.do, 0)} cm en el borde.</li>
-      <li>Parrilla: según a₁ ${b.bar1 ? `${b.bar1.n} Ø${b.bar1.d} c/${nf(b.bar1.sep, 0)} cm` : '—'} (fe₁ ${nf(b.f1.fe)} cm²); según a₂ ${b.bar2 ? `${b.bar2.n} Ø${b.bar2.d} c/${nf(b.bar2.sep, 0)} cm` : '—'} (fe₂ ${nf(b.f2.fe)} cm²).</li>
+      <li>Parrilla: según a₁ ${b.bar1 ? `${b.bar1.n} Ø${b.bar1.d} c/${nf(b.bar1.sep, 0)} cm (fe₁ ${nf(b.f1.fe)} cm²)` : '—'}; según a₂ ${b.bar2 ? `${b.bar2.n} Ø${b.bar2.d} c/${nf(b.bar2.sep, 0)} cm (fe₂ ${nf(b.f2.fe)} cm²)` : '—'}.</li>
       <li>Punzonado: τp = ${nf(b.tau)} kg/cm² ${b.tau <= 8 ? '<span class="ok">≤ 8</span>' : '<span class="no">&gt; 8</span>'}.</li></ul></div>
+    ${avisoHTML(b.avisos)}
+    ${medidasCaja('Cambiar las medidas de la base', medidaIn('basm', cid, 'a1', (S.basm[cid] || {}).a1, b.a1a, [30, 600], 'a₁ (cm)') + medidaIn('basm', cid, 'a2', (S.basm[cid] || {}).a2, b.a2a, [30, 600], 'a₂ (cm)') + medidaIn('basm', cid, 'd', (S.basm[cid] || {}).d, b.dAuto, [15, 200], 'd (cm)'), `En la centrada y la doble excéntrica, si ponés solo a₁, a₂ toma el mismo valor.`)}
     <p>Tipo: <label>${selBase(cid)}</label> <span class="fine">Centrada si la columna puede quedar en el medio de la base; excéntrica si está contra una medianera o la línea municipal; doblemente excéntrica en la esquina de las dos (apunte, pág. 31). El TP no dice dónde están las medianeras: elegilo vos.</span></p>
     <ol class="steps">
       <li><b>Carga</b>: la de ${irA(cid)} al pie, N = ${f3(b.Nt)} t = ${nf(N, 0)} kg.</li>
       <li><b>Superficie</b> (pág. 32): el peso de la base y del relleno se toma como el 10 % de N. <span class="mono">S = 1,1 N / σs = 1,1 × ${nf(N, 0)} / ${nf(S.sig)} = ${nf(b.S, 0)} cm²</span>.
-        ${b.tipo === 'e' ? `Con a₂ = 2,5 a₁ (pág. 35, para achicar el momento): <span class="mono">a₁ = √(S / 2,5) = ${nf(Math.sqrt(b.S / 2.5), 1)} → ${b.a1} cm</span>, <span class="mono">a₂ = S / a₁ = ${nf(b.S / b.a1, 1)} → ${b.a2} cm</span> (como el ejemplo de la pág. 76).` : `Cuadrada: <span class="mono">a = √S = ${nf(Math.sqrt(b.S), 1)} → ${b.a1} cm</span> (redondeado a 10 cm, como el ejemplo de la pág. 75: 205 → 210).`}
+        ${b.tipo === 'e' ? `Con a₂ = 2,5 a₁ (pág. 35, para achicar el momento): <span class="mono">a₁ = √(S / 2,5) = ${nf(Math.sqrt(b.S / 2.5), 1)} → ${b.a1} cm</span>, <span class="mono">a₂ = S / a₁ = ${nf(b.S / b.a1, 1)} → ${b.a2} cm</span> (como el ejemplo de la pág. 76).` : `Cuadrada: <span class="mono">a = √S = ${nf(Math.sqrt(b.S), 1)} → ${b.a1} cm</span> (redondeado a 10 cm, como el ejemplo de la pág. 75: 205 → 210).`}${b.fijoA ? ` <b>Elegida en los datos: ${b.a1} × ${b.a2} cm</b> (${nf(b.a1 * b.a2, 0)} cm²); el suelo recibe <span class="mono">1,1 N / (a₁ × a₂) = ${nf(b.sigR)} kg/cm²</span> ${b.sigR <= S.sig + 1e-9 ? `≤ σs = ${nf(S.sig)}: alcanza.` : `<span class="no">&gt; σs = ${nf(S.sig)}: no alcanza</span>.`}` : ''}
         Ensanche para apoyar el encofrado de la columna (${b.c} × ${b.c} cm): b₁ = ${nf(b.b1, 1)} cm, b₂ = ${nf(b.b2, 1)} cm${b.tipo === 'e' ? ' (del lado de la medianera no hay ensanche: 2,5 en vez de 5, como el ejemplo de la pág. 77)' : ''}.</li>
       <li><b>Momentos</b> (págs. 33 a 37): la reacción del suelo empuja hacia arriba y ${b.tipo === 'c' ? 'cada mitad de la base es una ménsula' : 'el lado que sale de la columna es una sola ménsula'}. <span class="mono">M₁ = N (a₁ − b₁)² ${M1t} = ${f3(b.Nt)} × (${nf(b.a1 / 100)} − ${nf(b.b1 / 100, 3)})² ${M1t.replace('a₁', nf(b.a1 / 100))} = ${f3(b.M1)} tm</span>; <span class="mono">M₂ = N (a₂ − b₂)² ${M2t} = ${f3(b.M2)} tm</span>.${b.tipo === 'c' ? ' Ojo: el ejemplo 1 del apunte (pág. 75) no divide por a₁ y da 22,82 tm donde la fórmula da 10,87; los ejemplos 2 y 3 sí dividen. Acá se usa la fórmula.' : ''}</li>
-      <li><b>Altura</b>: ${b.comoH === 'rig' ? `base rígida (pág. 34), <span class="mono">d = (a₁ − c₁) / 2 = (${b.a1} − ${b.c}) / 2 = ${nf(b.dRig, 1)} cm</span>` : `con kh = 13,83 como los ejemplos de las págs. 77 y 79, <span class="mono">h = 13,83 × √(M / b) = ${nf(b.hKh, 1)} cm</span>`}; para el punzonado alcanzaría <span class="mono">h = N / (pc × 8) = ${nf(b.hPunz, 1)} cm</span>. Se adopta el mayor, redondeado a 5 cm: <b>d = ${b.d} cm, h = d − 5 = ${b.h} cm</b>${b.subio ? ' (se subió para que kh entre en la Tabla 4)' : ''}. En el borde, d₀ = el mayor de 15 cm y d / 3 = ${nf(b.do, 0)} cm (pág. 32), así que d nunca baja de 15 cm.</li>
-      <li><b>Flexión</b> (Tabla 4): según a₁, <span class="mono">kh = ${b.h} / √(${nf(b.M1 * 100, 1)} / ${nf(b.b2, 1)}) = ${nf(b.f1.kh)}</span> → ke ${f3(b.f1.ke)}, <span class="mono">fe₁ = ${f3(b.f1.ke)} × ${nf(b.M1 * 100, 1)} / ${b.h} = ${nf(b.f1.fe)} cm²</span>; según a₂, <span class="mono">kh = ${b.h} / √(${nf(b.M2 * 100, 1)} / ${nf(b.b1, 1)}) = ${nf(b.f2.kh)}</span> → ke ${f3(b.f2.ke)}, <span class="mono">fe₂ = ${nf(b.f2.fe)} cm²</span>. El ancho comprimido es el de la columna ensanchada (b₂ para M₁, b₁ para M₂).</li>
+      <li><b>Altura</b>: ${b.comoH === 'rig' ? `base rígida (pág. 34), <span class="mono">d = (a₁ − c₁) / 2 = (${b.a1} − ${b.c}) / 2 = ${nf(b.dRig, 1)} cm</span>` : `con kh = 13,83 como los ejemplos de las págs. 77 y 79, <span class="mono">h = 13,83 × √(M / b) = ${nf(b.hKh, 1)} cm</span>`}; para el punzonado alcanzaría <span class="mono">h = N / (pc × 8) = ${nf(b.hPunz, 1)} cm</span>. ${b.fijoD ? `Lo calculado daba d = ${b.dAuto} cm; <b>elegido en los datos: d = ${b.d} cm, h = ${b.h} cm</b>` : `Se adopta el mayor, redondeado a 5 cm: <b>d = ${b.d} cm, h = d − 5 = ${b.h} cm</b>`}${b.subio ? ' (se subió para que kh entre en la Tabla 4)' : ''}. En el borde, d₀ = el mayor de 15 cm y d / 3 = ${nf(b.do, 0)} cm (pág. 32), así que d nunca baja de 15 cm.</li>
+      <li><b>Flexión</b> (Tabla 4): según a₁, <span class="mono">kh = ${b.h} / √(${nf(b.M1 * 100, 1)} / ${nf(b.b2, 1)}) = ${nf(b.f1.kh)}</span> ${b.f1.ok ? `→ ke ${f3(b.f1.ke)}, <span class="mono">fe₁ = ${f3(b.f1.ke)} × ${nf(b.M1 * 100, 1)} / ${b.h} = ${nf(b.f1.fe)} cm²</span>` : '<span class="no">&lt; 6,08: fuera de la tabla</span>'}; según a₂, <span class="mono">kh = ${b.h} / √(${nf(b.M2 * 100, 1)} / ${nf(b.b1, 1)}) = ${nf(b.f2.kh)}</span> ${b.f2.ok ? `→ ke ${f3(b.f2.ke)}, <span class="mono">fe₂ = ${nf(b.f2.fe)} cm²</span>` : '<span class="no">&lt; 6,08: fuera de la tabla</span>'}. El ancho comprimido es el de la columna ensanchada (b₂ para M₁, b₁ para M₂).</li>
       <li><b>Barras</b>: parrilla con separación ≤ 20 cm (pág. 34) y recubrimiento 5 cm. Según a₁: ${b.bar1 ? `<b>${b.bar1.n} Ø${b.bar1.d}</b> (${nf(b.bar1.A)} cm²) repartidas en ${b.a2 - 10} cm, c/${nf(b.bar1.sep, 1)} cm` : '—'}; según a₂: ${b.bar2 ? `<b>${b.bar2.n} Ø${b.bar2.d}</b> (${nf(b.bar2.A)} cm²) c/${nf(b.bar2.sep, 1)} cm` : '—'}. Se elige el Ø de 8 a 16 que da menos área con separación entre 10 y 20 cm (criterio de este cálculo).</li>
       <li><b>Punzonado</b> (pág. 33): perímetro de la columna que apoya, <span class="mono">pc = ${pcT} = ${b.pc} cm</span>. <span class="mono">τp = N / (pc × h) = ${nf(N, 0)} / (${b.pc} × ${b.h}) = ${nf(b.tau)} kg/cm²</span> ${b.tau <= 8 ? '≤ 8: verifica.' : '<span class="no">&gt; 8: no verifica</span>, hay que subir h.'}</li>
     </ol>
@@ -5784,15 +5829,15 @@ function tablaHTML(R) {
   if (TAB === 'vig') {
     const rows = R.G.BM.map(b => {
       const cmax = Math.max(...b.corte.map(c => c.tau0));
-      return `<tr data-pz="${b.id}" class="${SEL === b.id ? 'sel' : ''}"><td>${b.id}${b.supuesta ? ' *' : ''}</td><td>${b.lv}</td><td class="r">${nf(b.L)}</td><td class="r">${b.sec.b0} × ${b.sec.d0}</td><td class="r">${f3(b.res.Mpos)}</td><td>${b.tramo ? (b.tramo.ok ? barTxt(b.tramo.bar) : '<span class="no">no alcanza</span>') : '—'}</td><td class="r">${b.apoyo ? '−' + f3(b.apoyo.M) : '—'}</td><td>${b.apoyo ? (b.apoyo.ok ? barTxt(b.apoyo.bar) : '<span class="no">no alcanza</span>') : '—'}</td><td class="r">${nf(cmax)}${cmax > 25 ? ' <span class="no">!</span>' : ''}</td></tr>`;
+      return `<tr data-pz="${b.id}" class="${SEL === b.id ? 'sel' : ''}"><td>${b.id}${b.supuesta ? ' *' : ''}</td><td>${b.lv}</td><td class="r">${nf(b.L)}</td><td class="r">${b.sec.b0} × ${b.sec.d0}${b.sec.fijoB || b.sec.fijoD ? ' ✎' : ''}</td><td class="r">${f3(b.res.Mpos)}</td><td>${b.tramo ? (b.tramo.ok ? barTxt(b.tramo.bar) : '<span class="no">no alcanza</span>') : '—'}</td><td class="r">${b.apoyo ? '−' + f3(b.apoyo.M) : '—'}</td><td>${b.apoyo ? (b.apoyo.ok ? barTxt(b.apoyo.bar) : '<span class="no">no alcanza</span>') : '—'}</td><td class="r">${nf(cmax)}${cmax > 25 ? ' <span class="no">!</span>' : ''}</td></tr>`;
     }).join('');
     return `<div class="tblw"><table class="res"><thead><tr><th>Viga</th><th>Piso</th><th class="r">L (m)</th><th class="r">b₀ × d₀</th><th class="r">M tramo</th><th>Hierro abajo</th><th class="r">M apoyo</th><th>Hierro arriba</th><th class="r">τ₀ máx</th></tr></thead><tbody>${rows}</tbody></table></div><p class="fine">M en tm, τ₀ en kg/cm². * no está dibujada en el TP (ver Supuestos).</p>`;
   }
   if (TAB === 'col') {
-    const rows = Object.values(R.COL).map(c => `<tr data-pz="${c.id}" class="${SEL === c.id ? 'sel' : ''}"><td>${c.id}</td><td class="r">${f3(c.PA.N)}</td><td class="r">${c.PA.b} × ${c.PA.b}</td><td>${c.PA.bar.n} Ø${c.PA.bar.d}</td><td class="r">${f3(c.PB.N)}</td><td class="r">${c.PB.b} × ${c.PB.b}</td><td>${c.PB.bar.n} Ø${c.PB.bar.d}</td><td>Ø${c.PB.estr.d} c/${c.PB.estr.s}</td></tr>`).join('');
+    const rows = Object.values(R.COL).map(c => `<tr data-pz="${c.id}" class="${SEL === c.id ? 'sel' : ''}"><td>${c.id}</td><td class="r">${f3(c.PA.N)}</td><td class="r">${c.PA.b} × ${c.PA.b}${c.PA.fijo ? ' ✎' : ''}${c.PA.ok ? '' : ' <span class="no">!</span>'}</td><td>${barCol(c.PA)}</td><td class="r">${f3(c.PB.N)}</td><td class="r">${c.PB.b} × ${c.PB.b}${c.PB.fijo ? ' ✎' : ''}${c.PB.ok ? '' : ' <span class="no">!</span>'}</td><td>${barCol(c.PB)}</td><td>${c.PB.estr ? `Ø${c.PB.estr.d} c/${c.PB.estr.s}` : '—'}</td></tr>`).join('');
     return `<div class="tblw"><table class="res"><thead><tr><th>Columna</th><th class="r">N PA (t)</th><th class="r">PA (cm)</th><th>Hierro PA</th><th class="r">N PB (t)</th><th class="r">PB (cm)</th><th>Hierro PB</th><th>Estribos PB</th></tr></thead><tbody>${rows}</tbody></table></div>`;
   }
-  const rows = Object.entries(R.BAS).map(([cid, b]) => { const id = 'B' + cid.slice(1); return `<tr data-pz="${id}" class="${SEL === id ? 'sel' : ''}"><td>${id}</td><td>${selBase(cid)}</td><td class="r">${f3(b.Nt)}</td><td class="r">${b.a1} × ${b.a2}</td><td class="r">${b.d}</td><td>${b.bar1 ? `${b.bar1.n} Ø${b.bar1.d}` : '—'} / ${b.bar2 ? `${b.bar2.n} Ø${b.bar2.d}` : '—'}</td><td class="r">${nf(b.tau)}${b.tau > 8 ? ' <span class="no">!</span>' : ''}</td></tr>`; }).join('');
+  const rows = Object.entries(R.BAS).map(([cid, b]) => { const id = 'B' + cid.slice(1); return `<tr data-pz="${id}" class="${SEL === id ? 'sel' : ''}"><td>${id}</td><td>${selBase(cid)}</td><td class="r">${f3(b.Nt)}</td><td class="r">${b.a1} × ${b.a2}${b.fijoA ? ' ✎' : ''}</td><td class="r">${b.d}${b.fijoD ? ' ✎' : ''}</td><td>${b.bar1 ? `${b.bar1.n} Ø${b.bar1.d}` : '—'} / ${b.bar2 ? `${b.bar2.n} Ø${b.bar2.d}` : '—'}</td><td class="r">${nf(b.tau)}${b.ok ? '' : ' <span class="no">!</span>'}</td></tr>`; }).join('');
   return `<div class="tblw"><table class="res"><thead><tr><th>Base</th><th>Tipo</th><th class="r">N (t)</th><th class="r">a₁ × a₂ (cm)</th><th class="r">d (cm)</th><th>Parrilla a₁ / a₂</th><th class="r">τp</th></tr></thead><tbody>${rows}</tbody></table></div><p class="fine">σs = ${nf(S.sig)} kg/cm². Cambiá el tipo en la tabla o en la ficha de la base.</p>`;
 }
 function supuestosHTML(R) {
@@ -5909,6 +5954,7 @@ $('#tp-datos').addEventListener('change', e => {
   const el = e.target, k = el.dataset.k; if (!k) return;
   if (el.type === 'checkbox') S[k] = el.checked;
   else if (el.tagName === 'SELECT') S[k] = el.value;
+  else if (el.dataset.vacio && el.value === '') S[k] = '';
   else { const v = parseFloat(el.value); if (!isFinite(v) || v < +el.min || v > +el.max) { el.value = S[k]; return; } S[k] = v; }
   guardar(); dibujar();
 });
@@ -5930,7 +5976,7 @@ tp.addEventListener('click', e => {
 tp.addEventListener('keydown', e => { if (e.key !== 'Enter' && e.key !== ' ') return; const g = e.target.closest('g[data-pz]'); if (!g) return; e.preventDefault(); history.replaceState(null, '', '#tp-' + g.dataset.pz); elegir(g.dataset.pz, true); });
 addEventListener('hashchange', () => { const m = /^#tp-([A-Za-z0-9]+)$/.exec(location.hash); if (m && m[1] !== SEL) elegir(m[1], true); });
 { const m = /^#tp-([A-Za-z0-9]+)$/.exec(location.hash); if (m) SEL = m[1]; }
-window.__tpCalc = { TABR, T4, T4KX, T7, omega, feCol, resolver, disenoBase, disenoCol, barrasBase, totales, calcular, setSig: v => { S.sig = v; }, setMuros: l => { S.murosV = l; }, tramoMuro };
+window.__tpCalc = { TABR, T4, T4KX, T7, omega, feCol, resolver, disenoBase, disenoCol, barrasBase, totales, calcular, setSig: v => { S.sig = v; }, setMuros: l => { S.murosV = l; }, tramoMuro, setS: o => { Object.assign(S, o); } };
 llenarDatos();
 dibujar();
 })();
