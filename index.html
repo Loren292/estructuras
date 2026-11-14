@@ -898,6 +898,17 @@ svg.diag{width:100%;height:auto;max-width:640px;display:block}
 details.leer{border:1px solid var(--line);border-radius:10px;padding:8px 12px}
 details.leer summary{cursor:pointer;font-weight:600;color:var(--accent)}
 details.leer > * + *{margin-top:8px}
+.muros{border:1px solid var(--line);border-radius:10px;padding:12px}
+.muros h3{margin:0 0 4px}
+.muros table{width:100%;border-collapse:collapse;font-size:14px}
+.muros th{font:600 12px var(--f-body);color:var(--muted);text-align:left;padding:4px 6px;border-bottom:1px solid var(--line);white-space:nowrap}
+.muros td{padding:4px 6px;border-bottom:1px solid var(--line);vertical-align:middle}
+.muros input,.muros select{font:500 14px var(--f-mono);color:var(--ink);background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:4px 6px;width:5.2em;min-width:0}
+.muros select{width:auto}
+.muros input:focus-visible,.muros select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.muros td.r{text-align:right;font-family:var(--f-mono);white-space:nowrap}
+.muros .acc{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.muros .x{font:600 13px var(--f-body);background:none;border:1px solid var(--line);border-radius:6px;color:var(--hard);padding:3px 8px;cursor:pointer}
 ul.sup{margin:0;padding-left:20px;display:grid;gap:6px;font-size:15px}
 @media (max-width:600px){ .tp{padding:16px 12px 48px} .tp section{padding:14px 12px} .tp h1{font-size:28px} }
 </style>
@@ -5204,8 +5215,8 @@ drawPlan(); render();
       <label>De la esquina de V3 a C5 (m)<input type="number" step="0.05" min="0.3" max="4.5" data-k="dC5"><small>No está acotado: ≈ 1,25 m medido a escala en el esquemático (pág. 2)</small></label>
       <label>Hormigón de columnas y bases<select data-k="horm"><option value="H-17">H-17 (βR 140 kg/cm²)</option><option value="H-21">H-21 (βR 175 kg/cm²), el que dice el TP</option></select><small>Apunte, pág. 22. Vigas y bases usan la Tabla 4 del material, que es la de H-17 (la misma que usó el TP)</small></label>
       <label>Tensión admisible del suelo (kg/cm²)<input type="number" step="0.1" min="0.3" max="10" data-k="sig"><small>2,0 es la de la tosca para predimensionar (apunte, pág. 25); el valor real sale del estudio de suelos</small></label>
-      <label class="chk"><input type="checkbox" data-k="muros"><span>Sumar los muros exteriores de planta alta sobre las vigas de PB<small><br>El TP no los analiza. Si lo marcás: 0,20 m × altura de PA × 1,6 t/m³ (el peso del muro que el TP usó en L4) sobre V1, V8, V10, V13, V3, V12, V5, V14 y V7</small></span></label>
     </div>
+    <div class="muros" id="tp-muros"></div>
     <details class="leer">
       <summary>Cargas de las losas (q, en kg/m²): las del TP</summary>
       <div class="qs" id="tp-qs"></div>
@@ -5293,10 +5304,20 @@ function tabla4(Mtcm, b, h) {
 
 /* ---------- datos (los del TP por defecto) ---------- */
 const QTP = { L1: 681, L2: 781, LE: 1014.6, L3: 681, L4: 859.85, L5: 1053, L101: 619, L102: 619, L103: 619, L104: 619 };
-const DEF = () => ({ hPB: 2.6, hPA: 2.6, dC5: 1.25, horm: 'H-21', sig: 2.0, muros: false, q: { ...QTP }, base: {} });
+const DEF = () => ({ hPB: 2.6, hPA: 2.6, dC5: 1.25, horm: 'H-21', sig: 2.0, murosV: [], q: { ...QTP }, base: {} });
+/* muros exteriores de planta alta que apoyan sobre vigas de PB (plano de planta alta, pág. 1 del TP) */
+const MUROS_PA = ['V1', 'V8', 'V10', 'V13', 'V3', 'V12', 'V5', 'V14', 'V7'];
+const muroNuevo = v => ({ v, e: .2, h: S.hPA, g: 1.6, x1: '', x2: '' });
 const KS = 'estructuras-tp8-v1';
 let S = DEF();
-try { const g = JSON.parse(localStorage.getItem(KS)); if (g && typeof g === 'object') S = { ...DEF(), ...g, q: { ...QTP, ...(g.q || {}) }, base: { ...(g.base || {}) } }; } catch (e) {}
+try {
+  const g = JSON.parse(localStorage.getItem(KS));
+  if (g && typeof g === 'object') {
+    S = { ...DEF(), ...g, q: { ...QTP, ...(g.q || {}) }, base: { ...(g.base || {}) }, murosV: Array.isArray(g.murosV) ? g.murosV : [] };
+    if (g.muros === true && !Array.isArray(g.murosV)) S.murosV = MUROS_PA.map(muroNuevo);
+    delete S.muros;
+  }
+} catch (e) {}
 const guardar = () => { try { localStorage.setItem(KS, JSON.stringify(S)); } catch (e) {} };
 
 /* ---------- geometría (x a la derecha, y hacia abajo, en m; C1 en el origen) ---------- */
@@ -5347,10 +5368,16 @@ function geo() {
     B('V106', 'PA', [0, 12], [3.2, 12], [[0, 'C10'], [3.2, 'C11']])
   ];
   const CH = [['V8', 'V10'], ['V9', 'V11'], ['V2', 'V3'], ['V4', 'V5'], ['V107', 'V109'], ['V108', 'V110'], ['V102', 'V103'], ['V104', 'V105']];
-  const MUROS = ['V1', 'V8', 'V10', 'V13', 'V3', 'V12', 'V5', 'V14', 'V7'];
-  return { COLS, SL, BM, CH, MUROS };
+  return { COLS, SL, BM, CH };
 }
 
+/* tramo de la viga que ocupa un muro: [desde, hasta] en m, o null si el muro no es de esa viga o tiene datos que no sirven */
+function tramoMuro(m, b) {
+  if (m.v !== b.id || !(m.e > 0 && m.h > 0 && m.g > 0)) return null;
+  const x1 = m.x1 === '' || m.x1 == null ? 0 : +m.x1, x2 = m.x2 === '' || m.x2 == null ? b.L : +m.x2;
+  if (!(x1 >= 0 && x2 <= b.L + 1e-9 && x2 - x1 > 1e-6)) return null;
+  return [x1, x2];
+}
 /* ---------- losas: qué carga pasa cada una a sus bordes ---------- */
 const SIDE = { N: 'superior', S: 'inferior', W: 'izquierdo', E: 'derecho' };
 function edgeLine(s, side) {
@@ -5426,7 +5453,10 @@ function calcular() {
       const [x1, x2] = [loc(lo), loc(hi)].sort((p, q) => p - q);
       b.uni.push({ q: it.q, x1, x2, name: `losa ${s.id}`, calc: it.calc, de: s.id });
     }
-    if (S.muros && b.lv === 'PB' && G.MUROS.includes(b.id)) b.uni.push({ q: .2 * S.hPA * 1.6, x1: 0, x2: b.L, name: 'muro de PA', calc: `0,20 × ${nf(S.hPA)} × 1,6 t/m³` });
+    S.murosV.forEach((m, i) => {
+      const t = tramoMuro(m, b); if (!t) return;
+      b.uni.push({ q: m.e * m.h * m.g, x1: t[0], x2: t[1], name: `muro ${i + 1}`, calc: `espesor × alto × peso = ${nf(m.e)} × ${nf(m.h)} × ${nf(m.g, 2)} t/m³`, muro: i });
+    });
     b.P = [];
   }
   /* orden: una viga se resuelve después de las que apoyan en ella */
@@ -5774,12 +5804,12 @@ function supuestosHTML(R) {
     <li><b>Planta alta</b>: L101 y L102 son continuas (luces 3,20 / 3,20 y 4,20 / 5,00 = 0,84, q iguales) y L102 y L103 también (2,80 / 3,20 = 0,88 y 5,00 / 5,00); L102 y L104 no (2,80 / 5,00 = 0,56). Tablas: L101 3.2.a, L102 3.4, L103 3.2, L104 3.1.</li>
     <li><b>L4</b> con q = ${nf(L4q, 2)} kg/m²${Math.abs(L4q - 859.85) < .01 ? ' (el TP pone 913,85 porque pasa el 517 de las capas como 571)' : ''}; el muro va repartido en q, como lo hizo el TP.</li>
     <li><b>Alturas</b>: ${nf(S.hPB)} m en PB y ${nf(S.hPA)} m en PA, que el TP no da. Son la longitud de pandeo de cada tramo de columna y su peso propio. No se incluye el tramo enterrado hasta la base.</li>
-    <li><b>Muros de planta alta sobre vigas de PB</b>: ${S.muros ? 'incluidos (0,20 m × altura de PA × 1,6 t/m³)' : 'no incluidos, como en el TP. Si los muros exteriores de PA apoyan en esas vigas, marcá la casilla de Datos: es carga real'}.</li>
+    <li><b>Muros sobre vigas</b>: ${S.murosV.length ? `${S.murosV.length} cargado${S.murosV.length > 1 ? 's' : ''} en Datos (${[...new Set(S.murosV.map(m => m.v))].join(', ')})` : 'ninguno, como en el TP. Si los muros exteriores de PA apoyan en las vigas de PB, cargalos en Datos ("Muros sobre vigas"): es carga real'}. El de L4 va en la q de la losa, como lo hizo el TP.</li>
     <li><b>Vigas</b> con el criterio del material (sección d₀ = luz / 10, Tabla 4 de H-17, sección rectangular, corte de la clase). Las continuas son las que comparten columna con relación de luces ≥ 0,75: V8–V10, V9–V11, V2–V3, V4–V5 y sus iguales de PA. V13 y V14 no (2,80 / 5,00 = 0,56).</li>
     <li><b>Torsión de V5</b>: el balcón L5 cuelga de V5 y le pasa, además de la carga, un momento que la retuerce (${nf(R.RL.L5.M, 3)} tm por metro). La clase no trata la torsión: no está calculada.</li>
     <li><b>Columnas</b> a compresión centrada con el método ω; la de PB no se hace más chica que la de PA. <b>Bases</b> centradas salvo que elijas otra cosa.</li>
   </ul>
-  <p class="fine">Controles: todo lo que cargan las vigas de los dos pisos (losas, peso propio${S.muros ? ', muros' : ''}) suma ${f3(R.tot.cargado)} t y lo que les llega a las columnas desde las vigas, ${f3(R.tot.bases)} t: ${Math.abs(R.tot.cargado - R.tot.bases) < 1e-6 ? '<span class="ok">iguales, no se pierde carga en el camino</span>' : '<span class="no">no coinciden</span>'}. ${R.tot.sueltos.length ? `<span class="no">Bordes de losa sin viga: ${R.tot.sueltos.join('; ')}</span>` : 'Todos los bordes de losa que cargan tienen una viga abajo.'} Las reacciones de las Tablas 3.x suman casi exacto q × área de cada losa (diferencias de menos del 0,6 %, por el redondeo de los coeficientes; se ve en la ficha de cada losa).</p>`;
+  <p class="fine">Controles: todo lo que cargan las vigas de los dos pisos (losas, peso propio${S.murosV.length ? ', muros' : ''}) suma ${f3(R.tot.cargado)} t y lo que les llega a las columnas desde las vigas, ${f3(R.tot.bases)} t: ${Math.abs(R.tot.cargado - R.tot.bases) < 1e-6 ? '<span class="ok">iguales, no se pierde carga en el camino</span>' : '<span class="no">no coinciden</span>'}. ${R.tot.sueltos.length ? `<span class="no">Bordes de losa sin viga: ${R.tot.sueltos.join('; ')}</span>` : 'Todos los bordes de losa que cargan tienen una viga abajo.'} Las reacciones de las Tablas 3.x suman casi exacto q × área de cada losa (diferencias de menos del 0,6 %, por el redondeo de los coeficientes; se ve en la ficha de cada losa).</p>`;
 }
 
 /* ---------- pantalla ---------- */
@@ -5831,9 +5861,48 @@ function elegir(id, scroll) {
   dibujar();
   if (scroll) requestAnimationFrame(() => $('#tp-ficha-s').scrollIntoView({ behavior: 'smooth', block: 'start' }));
 }
+/* editor de muros sobre vigas */
+function murosHTML() {
+  const BM = geo().BM, opt = v => BM.map(b => `<option value="${b.id}"${b.id === v ? ' selected' : ''}>${b.id} (${b.lv})</option>`).join('');
+  const largo = v => { const b = BM.find(x => x.id === v); return b ? Math.hypot(b.b[0] - b.a[0], b.b[1] - b.a[1]) : 0; };
+  const filas = S.murosV.map((m, i) => {
+    const L = largo(m.v), t = tramoMuro(m, { id: m.v, L }), Lp = L.toFixed(2);
+    return `<tr><td>${i + 1}</td><td><select data-m="${i}" data-c="v" aria-label="Viga del muro ${i + 1}">${opt(m.v)}</select></td>
+      <td><input type="number" step="0.05" min="0.05" max="0.6" data-m="${i}" data-c="e" value="${m.e}" aria-label="Espesor del muro ${i + 1} en m"></td>
+      <td><input type="number" step="0.05" min="0.1" max="6" data-m="${i}" data-c="h" value="${m.h}" aria-label="Alto del muro ${i + 1} en m"></td>
+      <td><input type="number" step="0.1" min="0.3" max="2.5" data-m="${i}" data-c="g" value="${m.g}" aria-label="Peso específico del muro ${i + 1} en t/m³"></td>
+      <td><input type="number" step="0.05" min="0" max="${Lp}" data-m="${i}" data-c="x1" value="${m.x1}" placeholder="0" aria-label="Desde, en m sobre la viga"></td>
+      <td><input type="number" step="0.05" min="0" max="${Lp}" data-m="${i}" data-c="x2" value="${m.x2}" placeholder="${nf(L)}" aria-label="Hasta, en m sobre la viga"></td>
+      <td class="r">${t ? f3(m.e * m.h * m.g) : '<span class="no">revisar</span>'}</td>
+      <td><button type="button" class="x" data-quitar="${i}" aria-label="Quitar el muro ${i + 1}">Quitar</button></td></tr>`;
+  }).join('');
+  const hay = S.murosV.length;
+  return `<h3>Muros sobre vigas</h3>
+    <p class="fine">Cada muro carga su viga con <span class="mono">q = espesor × alto × peso específico</span> (t/m), en todo el largo o entre "desde" y "hasta" (m, medidos desde el extremo izquierdo o de arriba de la viga; vacío = toda la viga). Esa carga sigue a las columnas y a las bases. Peso: el TP usó 1,6 t/m³ en el muro de L4; el material usa 1,5 en la planta de la clase.</p>
+    ${hay ? `<div class="tblw"><table><thead><tr><th>#</th><th>Viga</th><th>Espesor (m)</th><th>Alto (m)</th><th>γ (t/m³)</th><th>Desde</th><th>Hasta</th><th style="text-align:right">q (t/m)</th><th></th></tr></thead><tbody>${filas}</tbody></table></div>` : '<p class="fine">Todavía no hay ninguno: el TP no carga muros sobre vigas.</p>'}
+    <div class="acc"><button type="button" class="btn" id="tp-m-add">Agregar un muro</button><button type="button" class="btn" id="tp-m-pa">Agregar los muros exteriores de PA (9 vigas de PB)</button>${hay ? '<button type="button" class="btn" id="tp-m-del">Quitar todos</button>' : ''}</div>`;
+}
+function llenarMuros() { $('#tp-muros').innerHTML = murosHTML(); }
+$('#tp-muros').addEventListener('change', e => {
+  const el = e.target, i = +el.dataset.m, c = el.dataset.c; if (!c || !S.murosV[i]) return;
+  if (c === 'v') { S.murosV[i].v = el.value; S.murosV[i].x1 = ''; S.murosV[i].x2 = ''; }
+  else if ((c === 'x1' || c === 'x2') && el.value === '') S.murosV[i][c] = '';
+  else { const v = parseFloat(el.value); if (!isFinite(v) || v < +el.min || v > +el.max) { el.value = S.murosV[i][c]; return; } S.murosV[i][c] = v; }
+  guardar(); llenarMuros(); dibujar();
+});
+$('#tp-muros').addEventListener('click', e => {
+  const q = e.target.closest('[data-quitar]');
+  if (q) S.murosV.splice(+q.dataset.quitar, 1);
+  else if (e.target.closest('#tp-m-add')) S.murosV.push(muroNuevo(SEL && /^V/.test(SEL) ? SEL : 'V1'));
+  else if (e.target.closest('#tp-m-pa')) { for (const v of MUROS_PA) if (!S.murosV.some(m => m.v === v && m.x1 === '' && m.x2 === '')) S.murosV.push(muroNuevo(v)); }
+  else if (e.target.closest('#tp-m-del')) S.murosV = [];
+  else return;
+  guardar(); llenarMuros(); dibujar();
+});
 /* datos */
 function llenarDatos() {
   $$('#tp-datos [data-k]').forEach(el => { const k = el.dataset.k; if (el.type === 'checkbox') el.checked = !!S[k]; else el.value = S[k]; });
+  llenarMuros();
   $('#tp-qs').innerHTML = Object.keys(QTP).map(k => `<label>${k}<br><input type="number" step="0.01" min="50" max="3000" data-q="${k}" value="${S.q[k]}"></label>`).join('');
 }
 $('#tp-datos').addEventListener('change', e => {
@@ -5861,7 +5930,7 @@ tp.addEventListener('click', e => {
 tp.addEventListener('keydown', e => { if (e.key !== 'Enter' && e.key !== ' ') return; const g = e.target.closest('g[data-pz]'); if (!g) return; e.preventDefault(); history.replaceState(null, '', '#tp-' + g.dataset.pz); elegir(g.dataset.pz, true); });
 addEventListener('hashchange', () => { const m = /^#tp-([A-Za-z0-9]+)$/.exec(location.hash); if (m && m[1] !== SEL) elegir(m[1], true); });
 { const m = /^#tp-([A-Za-z0-9]+)$/.exec(location.hash); if (m) SEL = m[1]; }
-window.__tpCalc = { TABR, T4, T4KX, T7, omega, feCol, resolver, disenoBase, disenoCol, barrasBase, totales, calcular, setSig: v => { S.sig = v; } };
+window.__tpCalc = { TABR, T4, T4KX, T7, omega, feCol, resolver, disenoBase, disenoCol, barrasBase, totales, calcular, setSig: v => { S.sig = v; }, setMuros: l => { S.murosV = l; }, tramoMuro };
 llenarDatos();
 dibujar();
 })();
