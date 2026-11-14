@@ -5280,6 +5280,7 @@ drawPlan(); render();
 const D = document, RAIZ = D.getElementById('tp'), $ = s => RAIZ.querySelector(s), $$ = s => [...RAIZ.querySelectorAll(s)];
 const nf = (v, d = 2) => { const x = Math.abs(v) < 0.5 * Math.pow(10, -d) ? 0 : v; return x.toFixed(d).replace('.', ',').replace('-', '−'); };
 const f3 = v => nf(v, 3);
+const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const up5 = v => Math.ceil(v / 5 - 1e-9) * 5;
 const up10 = v => Math.ceil(v / 10 - 1e-9) * 10;
@@ -5322,7 +5323,7 @@ function tabla4(Mtcm, b, h) {
 
 /* ---------- datos (los del TP por defecto) ---------- */
 const QTP = { L1: 681, L2: 781, LE: 1014.6, L3: 681, L4: 859.85, L5: 1053, L101: 619, L102: 619, L103: 619, L104: 619 };
-const DEF = () => ({ hPB: 2.6, hPA: 2.6, dC5: 1.25, horm: 'H-21', sig: 2.0, murosV: [], q: { ...QTP }, base: {}, b0all: '', sec: {}, colb: {}, basm: {} });
+const DEF = () => ({ hPB: 2.6, hPA: 2.6, dC5: 1.25, horm: 'H-21', sig: 2.0, murosV: [], q: { ...QTP }, base: {}, b0all: '', sec: {}, colb: {}, basm: {}, qMano: {}, cargasV: [], colMano: {} });
 /* muros exteriores de planta alta que apoyan sobre vigas de PB (plano de planta alta, pág. 1 del TP) */
 const MUROS_PA = ['V1', 'V8', 'V10', 'V13', 'V3', 'V12', 'V5', 'V14', 'V7'];
 const muroNuevo = v => ({ v, e: .2, h: S.hPA, g: 1.6, x1: '', x2: '' });
@@ -5331,7 +5332,7 @@ let S = DEF();
 try {
   const g = JSON.parse(localStorage.getItem(KS));
   if (g && typeof g === 'object') {
-    S = { ...DEF(), ...g, q: { ...QTP, ...(g.q || {}) }, base: { ...(g.base || {}) }, murosV: Array.isArray(g.murosV) ? g.murosV : [], sec: { ...(g.sec || {}) }, colb: { ...(g.colb || {}) }, basm: { ...(g.basm || {}) } };
+    S = { ...DEF(), ...g, q: { ...QTP, ...(g.q || {}) }, base: { ...(g.base || {}) }, murosV: Array.isArray(g.murosV) ? g.murosV : [], sec: { ...(g.sec || {}) }, colb: { ...(g.colb || {}) }, basm: { ...(g.basm || {}) }, qMano: { ...(g.qMano || {}) }, cargasV: Array.isArray(g.cargasV) ? g.cargasV : [], colMano: { ...(g.colMano || {}) } };
     if (g.muros === true && !Array.isArray(g.murosV)) S.murosV = MUROS_PA.map(muroNuevo);
     delete S.muros;
   }
@@ -5395,6 +5396,13 @@ function tramoMuro(m, b) {
   const x1 = m.x1 === '' || m.x1 == null ? 0 : +m.x1, x2 = m.x2 === '' || m.x2 == null ? b.L : +m.x2;
   if (!(x1 >= 0 && x2 <= b.L + 1e-9 && x2 - x1 > 1e-6)) return null;
   return [x1, x2];
+}
+/* dónde va una carga a mano: [x1, x2] (repartida) o [a] (puntual) en m, o null si no es de esa viga o no sirve */
+function tramoCarga(cg, b) {
+  if (!cg || cg.v !== b.id) return null;
+  if (cg.k === 'P') { const a = cg.a === '' || cg.a == null ? b.L / 2 : +cg.a; return +cg.P > 0 && a >= 0 && a <= b.L + 1e-9 ? [a] : null; }
+  const x1 = cg.x1 === '' || cg.x1 == null ? 0 : +cg.x1, x2 = cg.x2 === '' || cg.x2 == null ? b.L : +cg.x2;
+  return +cg.q > 0 && x1 >= 0 && x2 <= b.L + 1e-9 && x2 - x1 > 1e-6 ? [x1, x2] : null;
 }
 /* ---------- losas: qué carga pasa cada una a sus bordes ---------- */
 const SIDE = { N: 'superior', S: 'inferior', W: 'izquierdo', E: 'derecho' };
@@ -5466,18 +5474,27 @@ function calcular() {
   /* cargas repartidas de cada viga */
   for (const b of G.BM) {
     const lo0 = Math.min(b.ln.s0, b.ln.s1), hi0 = Math.max(b.ln.s0, b.ln.s1), loc = s => Math.abs(s - b.ln.s0);
-    b.uni = [{ q: b.sec.pp, x1: 0, x2: b.L, name: 'peso propio', calc: `${nf(b.sec.b0 / 100)} × ${nf(b.sec.d0 / 100)} × 2,4 t/m³` }];
-    for (const s of G.SL) if (s.lv === b.lv) for (const it of RL[s.id].items) {
+    const qm = +(S.qMano[b.id] || {}).q;
+    b.qMano = qm > 0 ? qm : null;
+    b.uni = b.qMano ? [] : [{ q: b.sec.pp, x1: 0, x2: b.L, name: 'peso propio', calc: `${nf(b.sec.b0 / 100)} × ${nf(b.sec.d0 / 100)} × 2,4 t/m³` }];
+    if (b.qMano) b.uni.push({ q: b.qMano, x1: 0, x2: b.L, name: 'carga a mano', calc: 'cargada a mano: reemplaza el peso propio, las losas y los muros', mano: true });
+    if (!b.qMano) for (const s of G.SL) if (s.lv === b.lv) for (const it of RL[s.id].items) {
       if (it.line.ax !== b.ln.ax || Math.abs(it.line.at - b.ln.at) > 1e-6) continue;
       const lo = Math.max(it.line.lo, lo0), hi = Math.min(it.line.hi, hi0); if (hi - lo < .01) continue;
       const [x1, x2] = [loc(lo), loc(hi)].sort((p, q) => p - q);
       b.uni.push({ q: it.q, x1, x2, name: `losa ${s.id}`, calc: it.calc, de: s.id });
     }
-    S.murosV.forEach((m, i) => {
+    if (!b.qMano) S.murosV.forEach((m, i) => {
       const t = tramoMuro(m, b); if (!t) return;
       b.uni.push({ q: m.e * m.h * m.g, x1: t[0], x2: t[1], name: `muro ${i + 1}`, calc: `espesor × alto × peso = ${nf(m.e)} × ${nf(m.h)} × ${nf(m.g, 2)} t/m³`, muro: i });
     });
     b.P = [];
+    S.cargasV.forEach((cg, i) => {
+      const t = tramoCarga(cg, b); if (!t) return;
+      const nom = cg.n ? String(cg.n).slice(0, 40) : `carga a mano ${i + 1}`;
+      if (cg.k === 'P') b.P.push({ P: +cg.P, a: t[0], name: nom, calc: 'cargada a mano', mano: true });
+      else b.uni.push({ q: +cg.q, x1: t[0], x2: t[1], name: nom, calc: 'cargada a mano', mano: true });
+    });
   }
   /* orden: una viga se resuelve después de las que apoyan en ella */
   const units = []; const vistos = new Set();
@@ -5535,8 +5552,10 @@ function calcular() {
   const h = HORM[S.horm], COL = {};
   for (const id of Object.keys(G.COLS)) {
     const fx = S.colb[id] || {};
-    const pa = disenoCol(sumR(colN[id].PA), 0, S.hPA, h, 20, +fx.PA || 0);
-    const pb = disenoCol(sumR(colN[id].PB), pa.Nbot, S.hPB, h, pa.b, +fx.PB || 0);
+    const cm = S.colMano[id] || {}, man = lv => cm[lv] !== undefined && cm[lv] !== '' && +cm[lv] >= 0 ? +cm[lv] : null;
+    const pa = disenoCol(man('PA') ?? sumR(colN[id].PA), 0, S.hPA, h, 20, +fx.PA || 0);
+    const pb = disenoCol(man('PB') ?? sumR(colN[id].PB), pa.Nbot, S.hPB, h, pa.b, +fx.PB || 0);
+    pa.mano = man('PA') != null; pb.mano = man('PB') != null; pa.calc = sumR(colN[id].PA); pb.calc = sumR(colN[id].PB);
     COL[id] = { id, xy: G.COLS[id], vig: colN[id], PA: pa, PB: pb, N: pb.Nbot };
   }
   const BAS = {};
@@ -5730,13 +5749,30 @@ function vigaSVG(b) {
 /* ---------- medidas que elige el usuario (vacío = lo que calcula) ---------- */
 const barCol = d => d.bar ? `${d.bar.n} Ø${d.bar.d}` : '<span class="no">no alcanza</span>';
 const avisoHTML = l => l && l.length ? `<p class="ojo"><b>No verifica:</b> ${l.join('; ')}.</p>` : '';
-function medidaIn(grupo, id, campo, valor, auto, rango, etq) {
-  return `<label>${etq}<input type="number" step="1" min="${rango[0]}" max="${rango[1]}" data-ov="${grupo}|${id}|${campo}" value="${valor || ''}" placeholder="${auto}"></label>`;
+function medidaIn(grupo, id, campo, valor, auto, rango, etq, paso = 1) {
+  return `<label>${etq}<input type="number" step="${paso}" min="${rango[0]}" max="${rango[1]}" data-ov="${grupo}|${id}|${campo}" value="${valor === undefined || valor === null ? '' : valor}" placeholder="${auto}"></label>`;
+}
+/* caja de la ficha de viga para cargar a mano: reemplazar la repartida calculada y sumar cargas propias */
+function cargasManoHTML(b) {
+  const mias = S.cargasV.map((cg, i) => ({ cg, i })).filter(x => x.cg.v === b.id), L = b.L.toFixed(2);
+  const fila = ({ cg, i }) => {
+    const ok = !!tramoCarga(cg, b), n = `<input type="text" maxlength="40" data-cm="${i}|n" value="${esc(cg.n || '')}" placeholder="nombre" aria-label="Nombre de la carga">`;
+    return cg.k === 'P'
+      ? `<tr><td>${n}</td><td>puntual</td><td><input type="number" step="0.01" min="0.001" max="200" data-cm="${i}|P" value="${cg.P ?? ''}" aria-label="P en t"></td><td><input type="number" step="0.05" min="0" max="${L}" data-cm="${i}|a" value="${cg.a ?? ''}" placeholder="${nf(b.L / 2)}" aria-label="A cuántos m"></td><td>—</td><td class="r">${ok ? 'sí' : '<span class="no">revisar</span>'}</td><td><button type="button" class="x" data-cm-del="${i}">Quitar</button></td></tr>`
+      : `<tr><td>${n}</td><td>repartida</td><td><input type="number" step="0.01" min="0.001" max="50" data-cm="${i}|q" value="${cg.q ?? ''}" aria-label="q en t/m"></td><td><input type="number" step="0.05" min="0" max="${L}" data-cm="${i}|x1" value="${cg.x1 ?? ''}" placeholder="0" aria-label="Desde, en m"></td><td><input type="number" step="0.05" min="0" max="${L}" data-cm="${i}|x2" value="${cg.x2 ?? ''}" placeholder="${nf(b.L)}" aria-label="Hasta, en m"></td><td class="r">${ok ? 'sí' : '<span class="no">revisar</span>'}</td><td><button type="button" class="x" data-cm-del="${i}">Quitar</button></td></tr>`;
+  };
+  const abierta = b.qMano || mias.length ? ' open' : '';
+  return `<details class="leer med muros"${abierta}><summary>Cargar a mano</summary>
+    <div class="datos">${medidaIn('qMano', b.id, 'q', (S.qMano[b.id] || {}).q, 'calculada', [0, 50], 'Mi carga repartida en toda la viga (t/m)', 0.001)}</div>
+    <p class="fine">Si la ponen, <b>reemplaza</b> el peso propio, las losas y los muros que calcula la pestaña (pongan todo lo que ustedes sumaron, peso propio incluido). Las cargas de otras vigas que apoyan en esta siguen. Vacío = lo calculado.</p>
+    <p class="fine">Cargas que se <b>suman</b> a esta viga: repartidas en t/m (desde/hasta en m desde el extremo izquierdo o de arriba; vacío = toda la viga) o puntuales en t (a cuántos m; vacío = en el medio).</p>
+    ${mias.length ? `<div class="tblw"><table><thead><tr><th>Nombre</th><th>Tipo</th><th>q (t/m) o P (t)</th><th>Desde o a (m)</th><th>Hasta (m)</th><th style="text-align:right">Cuenta</th><th></th></tr></thead><tbody>${mias.map(fila).join('')}</tbody></table></div>` : ''}
+    <div class="acc"><button type="button" class="btn" data-cm-add="q" data-v="${b.id}">Agregar repartida</button><button type="button" class="btn" data-cm-add="P" data-v="${b.id}">Agregar puntual</button></div></details>`;
 }
 const medidasCaja = (titulo, campos, nota) => `<details class="leer med"${campos.includes('value=""') && !/value="\d/.test(campos) ? '' : ' open'}><summary>${titulo}</summary><div class="datos">${campos}</div><p class="fine">${nota} Vacío = lo que calcula. Si una medida no alcanza, la ficha lo avisa en vez de agrandarla.</p></details>`;
 RAIZ.addEventListener('change', e => {
   const el = e.target.closest('[data-ov]'); if (!el) return;
-  const [g, id, c] = el.dataset.ov.split('|'), T = { sec: S.sec, colb: S.colb, basm: S.basm }[g];
+  const [g, id, c] = el.dataset.ov.split('|'), T = { sec: S.sec, colb: S.colb, basm: S.basm, qMano: S.qMano, colMano: S.colMano }[g];
   if (el.value === '') { if (T[id]) { delete T[id][c]; if (!Object.keys(T[id]).length) delete T[id]; } }
   else { const v = parseFloat(el.value); if (!isFinite(v) || v < +el.min || v > +el.max) { el.value = (T[id] || {})[c] || ''; return; } (T[id] = T[id] || {})[c] = v; }
   guardar(); dibujar();
@@ -5799,6 +5835,21 @@ function baseSVG(b) {
   const corte = `<figure><svg class="diag" viewBox="0 0 ${W + 40} ${yb + 48}" role="img" aria-label="Corte de la base">${q}</svg><figcaption>Corte: la columna apoya en la base, el suelo empuja hacia arriba y cada ala se dobla como una ménsula, así que tracciona abajo, donde va la parrilla (rojo). Las líneas punteadas marcan dónde se verifica el punzonado: la superficie de la columna metida en la base. El borde baja hasta d₀ para ahorrar hormigón.</figcaption></figure>`;
   return `<div class="dibus">${plan}${corte}</div>`;
 }
+RAIZ.addEventListener('change', e => {
+  const el = e.target.closest('[data-cm]'); if (!el) return;
+  const [i, c] = el.dataset.cm.split('|'), cg = S.cargasV[+i]; if (!cg) return;
+  if (c === 'n') cg.n = el.value.slice(0, 40);
+  else if (el.value === '') cg[c] = '';
+  else { const v = parseFloat(el.value); if (!isFinite(v) || v < +el.min || v > +el.max) { el.value = cg[c] ?? ''; return; } cg[c] = v; }
+  guardar(); dibujar();
+});
+RAIZ.addEventListener('click', e => {
+  const a = e.target.closest('[data-cm-add]'), d = e.target.closest('[data-cm-del]');
+  if (a) S.cargasV.push(a.dataset.cmAdd === 'P' ? { v: a.dataset.v, k: 'P', P: '', a: '', n: '' } : { v: a.dataset.v, k: 'q', q: '', x1: '', x2: '', n: '' });
+  else if (d) S.cargasV.splice(+d.dataset.cmDel, 1);
+  else return;
+  guardar(); dibujar();
+});
 /* ---------- fichas ---------- */
 const irA = id => `<a href="#tp-${id}" data-ir="${id}">${id}</a>`;
 function fichaViga(R, b) {
@@ -5806,8 +5857,8 @@ function fichaViga(R, b) {
   const cad = b.cad ? `Es continua con ${irA(b.cad.A === b.id ? b.cad.B : b.cad.A)} sobre ${irA(b.cad.col)}: relación de luces ${nf(b.cad.rel)} ≥ 0,75 (clase de vigas).` : (b.sup[0][0] > 0 ? `Tiene un voladizo de ${nf(b.sup[0][0])} m: en la esquina no hay columna.` : 'Simplemente apoyada.');
   const apoyos = b.sup.map(([s, to]) => to[0] === 'C' ? `columna ${irA(to)}` : `viga ${irA(to)}`).join(' y ');
   const tbl = `<div class="tblw"><table class="res"><thead><tr><th>Carga</th><th>De dónde sale</th><th class="r">Desde (m)</th><th class="r">Hasta (m)</th><th class="r">q (t/m)</th></tr></thead><tbody>
-    ${b.uni.map(u => `<tr><td>${u.de ? irA(u.de) : u.name}</td><td class="mono">${u.calc}</td><td class="r">${nf(u.x1)}</td><td class="r">${nf(u.x2)}</td><td class="r">${f3(u.q)}</td></tr>`).join('')}
-    ${b.P.map(p => `<tr><td>Puntual de ${irA(p.name)}</td><td>${p.calc}, que apoya acá</td><td class="r" colspan="2">a ${nf(p.a)}</td><td class="r">P = ${f3(p.P)} t</td></tr>`).join('')}
+    ${b.uni.map(u => `<tr><td>${u.de ? irA(u.de) : esc(u.name)}</td><td class="mono">${u.calc}</td><td class="r">${nf(u.x1)}</td><td class="r">${nf(u.x2)}</td><td class="r">${f3(u.q)}</td></tr>`).join('')}
+    ${b.P.map(p => p.mano ? `<tr><td>${esc(p.name)} (puntual)</td><td>cargada a mano</td><td class="r" colspan="2">a ${nf(p.a)}</td><td class="r">P = ${f3(p.P)} t</td></tr>` : `<tr><td>Puntual de ${irA(p.name)}</td><td>${p.calc}, que apoya acá</td><td class="r" colspan="2">a ${nf(p.a)}</td><td class="r">P = ${f3(p.P)} t</td></tr>`).join('')}
     <tr class="tot"><td colspan="4">Total que carga</td><td class="r">${f3(r.F)} t</td></tr></tbody></table></div>`;
   const dimTxt = (d, que) => {
     if (!d) return '';
@@ -5833,10 +5884,11 @@ function fichaViga(R, b) {
     ${sec.fijoB || sec.fijoD ? `<p class="${sec.rango ? 'fine' : 'ojo'}">Sección elegida: ${sec.fijoB ? `b₀ = ${sec.b0} cm (${sec.fijoB === 'todas' ? 'el de todas las vigas, en Datos' : 'de esta viga'}; el automático daba ${sec.b0a})` : ''}${sec.fijoB && sec.fijoD ? ' y ' : ''}${sec.fijoD ? `d₀ = ${sec.d0} cm (el automático daba ${sec.d0a})` : ''}. ${sec.rango ? `Está dentro de lo que pide la clase, d₀ / 3 ≤ b₀ ≤ d₀ / 2 (${nf(sec.d0 / 3, 1)} a ${nf(sec.d0 / 2, 1)} cm).` : `<b>Fuera de lo que pide la clase</b>: d₀ / 3 ≤ b₀ ≤ d₀ / 2 = ${nf(sec.d0 / 3, 1)} a ${nf(sec.d0 / 2, 1)} cm. Con b₀ = ${sec.b0} cm entra si d₀ va de ${nf(2 * sec.b0, 0)} a ${nf(3 * sec.b0, 0)} cm (se cambia acá arriba). La clase dice "aproximadamente"; se calcula igual.`} Lo que sigue usa esta sección.</p>` : ''}
     <p>Con el criterio que usa el material para las vigas de la clase: <span class="mono">d₀ = luz / 10 = ${nf(sec.Lmax)} m / 10 = ${nf(sec.Lmax * 10, 1)} cm → ${sec.d0} cm</span> (la luz mayor entre apoyos${b.chain.length > 1 ? ' de las dos vigas continuas, que van con la misma sección' : ''}), <span class="mono">b₀ ≥ d₀ / 3 = ${nf(sec.d0 / 3, 1)} → ${sec.b0} cm</span> (el primer múltiplo de 5; la clase deja elegir entre d₀ / 3 y d₀ / 2 = ${nf(sec.d0 / 2, 1)} cm, por ejemplo con el ancho del muro que va abajo), <span class="mono">h = d₀ − 3 = ${sec.h} cm</span>. Peso propio: <span class="mono">${nf(sec.b0 / 100)} × ${nf(sec.d0 / 100)} × 2,4 = ${f3(sec.pp)} t/m</span>.</p>
     <h3>3 · Cargas</h3>
-    <p>Cada losa le pasa la reacción de su borde. Las de dos direcciones salen de las columnas de reacciones de las Tablas 3.x (coeficiente × q × luz menor², la reacción total del borde, dividida por su largo); las de una dirección, q × L / 2; el voladizo, q × L + P.</p>
+    <p>${b.qMano ? `<b>Carga repartida puesta a mano: ${f3(b.qMano)} t/m en toda la viga</b>, en lugar de ${S.murosV.some(m => m.v === b.id) ? 'el peso propio, las losas y los muros' : 'el peso propio y las losas'} que calcula la pestaña.` : 'Cada losa le pasa la reacción de su borde. Las de dos direcciones salen de las columnas de reacciones de las Tablas 3.x (coeficiente × q × luz menor², la reacción total del borde, dividida por su largo); las de una dirección, q × L / 2; el voladizo, q × L + P.'}${b.P.some(p => !p.mano) ? ' Si otra viga apoya en esta, le pasa su reacción como una carga puntual.' : ''}</p>
     ${tbl}
+    ${cargasManoHTML(b)}
     <h3>4 · Corte, momento y reacciones</h3>
-    <ol class="steps">${cad2}<li>Reacciones por equilibrio: ${b.sup.map(([s, to], k) => `${to}: ${f3(r.R[k])} t`).join('; ')} (suman ${f3(r.R[0] + r.R[1])} t = lo cargado, ${f3(r.F)} t).</li>
+    <ol class="steps">${cad2}<li>Reacciones por equilibrio: ${b.sup.map(([s, to], k) => `${to}: ${f3(r.R[k])} t`).join('; ')} (suman ${f3(r.R[0] + r.R[1])} t = lo cargado, ${f3(r.F)} t). Cada reacción es lo que esta viga le pasa a ese apoyo: ${b.sup.map(([s, to]) => to[0] === 'C' ? `la columna ${irA(to)} la suma con las de las otras vigas que llegan a ella` : `la viga ${irA(to)} la recibe como una carga puntual`).join('; ')}.</li>
       <li>Momento máximo de tramo: ${f3(r.Mpos)} tm a ${nf(r.xPos)} m${r.Mneg < -1e-6 ? `; momento negativo: ${f3(r.Mneg)} tm a ${nf(r.xNeg)} m` : ''}.</li></ol>
     ${vigaSVG(b)}
     <p class="fine">Arriba, las cargas (los rectángulos son las repartidas, apiladas si van en el mismo tramo; las flechas, las puntuales). En el medio el corte V (positivo arriba) y abajo el momento M (positivo abajo, como en los apuntes: tracciona abajo).</p>
@@ -5854,7 +5906,12 @@ function fichaCol(R, c) {
     const vig = c.vig[lv], hp = lv === 'PA' ? S.hPA : S.hPB;
     return `<h3>${lv === 'PA' ? 'Tramo de planta alta' : 'Tramo de planta baja'}</h3>
     <ol class="steps">
-      <li><b>Carga</b>: ${vig.length ? vig.map(v => `${irA(v.de)} ${f3(v.R)} t`).join(' + ') : 'ninguna viga de este piso'}${d.Narr ? ` + lo que baja de PA ${f3(d.Narr)} t` : ''} = ${f3(d.Nvig + d.Narr)} t; más su peso propio <span class="mono">${nf(d.b / 100)} × ${nf(d.b / 100)} × ${nf(hp)} × 2,4 = ${f3(d.pp)} t</span> → <b>N = ${f3(d.N)} t</b>.</li>
+      <li><b>Carga</b>: lo que le llega a esta columna en este piso, sumado:
+        <div class="tblw"><table class="res"><thead><tr><th>Qué</th><th>De dónde sale</th><th class="r">t</th></tr></thead><tbody>
+        ${d.mano ? `<tr><td>Vigas de este piso</td><td>puesta a mano (lo calculado daba ${f3(d.calc)} t: ${vig.map(v => `${v.de} ${f3(v.R)}`).join(' + ') || 'ninguna'})</td><td class="r">${f3(d.Nvig)}</td></tr>` : vig.length ? vig.map(v => `<tr><td>Viga ${irA(v.de)}</td><td>su reacción en esta columna (ficha de la viga, paso 4)</td><td class="r">${f3(v.R)}</td></tr>`).join('') : '<tr><td colspan="3">Ninguna viga de este piso</td></tr>'}
+        ${lv === 'PB' ? `<tr><td>Lo que baja de PA</td><td>la N de la columna de arriba, con su peso</td><td class="r">${f3(d.Narr)}</td></tr>` : ''}
+        <tr><td>Peso propio</td><td class="mono">${nf(d.b / 100)} × ${nf(d.b / 100)} × ${nf(hp)} × 2,4</td><td class="r">${f3(d.pp)}</td></tr>
+        <tr class="tot"><td colspan="2">N al pie de este tramo</td><td class="r">${f3(d.N)}</td></tr></tbody></table></div></li>
       <li><b>Predimensionado</b> (apunte, pág. 23): <span class="mono">σ'b = σ'bk / 2 = ${H.bk} / 2 = ${d.sigB} kg/cm²</span>; <span class="mono">Fb = N / σ'b = ${nf((d.Nvig + d.Narr) * 1000, 0)} / ${d.sigB} = ${nf(d.Fb0, 0)} cm²</span> → lado √Fb = ${nf(Math.sqrt(d.Fb0), 1)} cm → <b>${d.b} × ${d.b} cm</b>${d.iter.length > 1 ? ` (se agrandó: con ${d.iter[0].b} cm la cuantía daba ${nf(d.iter[0].mu, 1)} %, más del 5 %)` : ''}${lv === 'PB' && d.b === c.PA.b && Math.sqrt(d.Fb0) < c.PA.b - 2.5 ? ' (no más chica que la de arriba)' : ''}. Lado mínimo 20 cm (pág. 20); redondeado a 5 cm, criterio de este cálculo.${d.fijo ? ` <b>Elegido en los datos: ${d.b} × ${d.b} cm</b>; lo que sigue usa ese lado.` : ''}</li>
       <li><b>Esbeltez</b>: <span class="mono">λ = Sk / b = ${nf(hp * 100, 0)} / ${d.b} = ${nf(d.lam, 1)}</span> (Sk = altura de piso, k = 1) → Tabla 7: ${d.om.txt}.</li>
       <li><b>Acero</b> (fórmula 1): <span class="mono">fe = (N × ν × ω − Fb × βR) / βs = (${nf(d.N * 1000, 0)} × 2,1 × ${f3(d.w)} − ${nf(d.Fb, 0)} × ${H.bR}) / 4200 = ${nf(d.feC)} cm²</span>${d.porMin ? `; da menos que la cuantía mínima, 0,8 % × ${nf(d.Fb, 0)} = ${nf(d.feMin)} cm², que es la que manda` : ` (cuantía ${nf(d.mu, 2)} %, entre 0,8 y 5 %)`} → <b>${d.bar ? `${d.bar.n} Ø${d.bar.d} (${nf(d.bar.A)} cm²)` : 'no alcanzan 8 Ø20: la sección es chica'}</b>${d.bar ? `; estribos Ø${d.estr.d} c/${d.estr.s} cm (el menor entre el lado, ${d.b} cm, y 12 Ø = ${nf(12 * d.bar.d / 10, 1)} cm)` : ''}.</li>
@@ -5868,6 +5925,7 @@ function fichaCol(R, c) {
       <li>Planta alta: ${c.PA.b} × ${c.PA.b} cm, ${barCol(c.PA)}${c.PA.estr ? `, estribos Ø${c.PA.estr.d} c/${c.PA.estr.s}` : ''}; N = ${f3(c.PA.N)} t.</li>
       <li>Planta baja: ${c.PB.b} × ${c.PB.b} cm, ${barCol(c.PB)}${c.PB.estr ? `, estribos Ø${c.PB.estr.d} c/${c.PB.estr.s}` : ''}; N = ${f3(c.PB.N)} t.</li>
       <li>A la base ${irA('B' + c.id.slice(1))} baja <b>${f3(c.N)} t</b>.</li></ul></div>
+    ${medidasCaja('Cargar a mano lo que le llega de las vigas', medidaIn('colMano', c.id, 'PA', (S.colMano[c.id] || {}).PA, nf(c.PA.calc, 3).replace(',', '.'), [0, 500], 'Vigas en PA (t)', 0.001) + medidaIn('colMano', c.id, 'PB', (S.colMano[c.id] || {}).PB, nf(c.PB.calc, 3).replace(',', '.'), [0, 500], 'Vigas en PB (t)', 0.001), 'Si calcularon las reacciones de las vigas por su cuenta, pongan acá la suma de las que llegan a esta columna en cada piso. El peso propio y lo que baja de PA se siguen sumando solos.')}
     ${medidasCaja('Cambiar el lado de la columna', medidaIn('colb', c.id, 'PA', fx.PA, c.PA.bAuto, [15, 80], 'Lado en PA (cm)') + medidaIn('colb', c.id, 'PB', fx.PB, Math.max(c.PB.bAuto, c.PA.b), [15, 80], 'Lado en PB (cm)'), 'Columna cuadrada de ese lado. Cambia su peso propio, la esbeltez y la armadura, y la base de abajo.')}
     <p>La columna junta lo que le pasan las vigas que llegan a ella, su peso propio y lo que baja del piso de arriba (apunte, pág. 20). Se calcula de arriba hacia abajo. Método ω: <span class="mono">N × ν × ω = Fb × βR + fe × βs</span>, con ν = 2,1, βR = ${H.bR} kg/cm² (${S.horm}) y βs = 4200 kg/cm² (apunte, págs. 22 y 23).</p>
     <div class="dibus">${columnaSVG(c)}</div>
@@ -5909,12 +5967,12 @@ function tablaHTML(R) {
   if (TAB === 'vig') {
     const rows = R.G.BM.map(b => {
       const cmax = Math.max(...b.corte.map(c => c.tau0));
-      return `<tr data-pz="${b.id}" class="${SEL === b.id ? 'sel' : ''}"><td>${b.id}${b.supuesta ? ' *' : ''}</td><td>${b.lv}</td><td class="r">${nf(b.L)}</td><td class="r">${b.sec.b0} × ${b.sec.d0}${b.sec.fijoB || b.sec.fijoD ? ' ✎' : ''}</td><td class="r">${f3(b.res.Mpos)}</td><td>${b.tramo ? (b.tramo.ok ? barTxt(b.tramo.bar) : '<span class="no">no alcanza</span>') : '—'}</td><td class="r">${b.apoyo ? '−' + f3(b.apoyo.M) : '—'}</td><td>${b.apoyo ? (b.apoyo.ok ? barTxt(b.apoyo.bar) : '<span class="no">no alcanza</span>') : '—'}</td><td class="r">${nf(cmax)}${cmax > 25 ? ' <span class="no">!</span>' : ''}</td></tr>`;
+      return `<tr data-pz="${b.id}" class="${SEL === b.id ? 'sel' : ''}"><td>${b.id}${b.supuesta ? ' *' : ''}${b.qMano || b.uni.some(u => u.mano) || b.P.some(p => p.mano) ? ' ✎' : ''}</td><td>${b.lv}</td><td class="r">${nf(b.L)}</td><td class="r">${b.sec.b0} × ${b.sec.d0}${b.sec.fijoB || b.sec.fijoD ? ' ✎' : ''}</td><td class="r">${f3(b.res.Mpos)}</td><td>${b.tramo ? (b.tramo.ok ? barTxt(b.tramo.bar) : '<span class="no">no alcanza</span>') : '—'}</td><td class="r">${b.apoyo ? '−' + f3(b.apoyo.M) : '—'}</td><td>${b.apoyo ? (b.apoyo.ok ? barTxt(b.apoyo.bar) : '<span class="no">no alcanza</span>') : '—'}</td><td class="r">${nf(cmax)}${cmax > 25 ? ' <span class="no">!</span>' : ''}</td></tr>`;
     }).join('');
     return `<div class="tblw"><table class="res"><thead><tr><th>Viga</th><th>Piso</th><th class="r">L (m)</th><th class="r">b₀ × d₀</th><th class="r">M tramo</th><th>Hierro abajo</th><th class="r">M apoyo</th><th>Hierro arriba</th><th class="r">τ₀ máx</th></tr></thead><tbody>${rows}</tbody></table></div><p class="fine">M en tm, τ₀ en kg/cm². * no está dibujada en el TP (ver Supuestos).</p>`;
   }
   if (TAB === 'col') {
-    const rows = Object.values(R.COL).map(c => `<tr data-pz="${c.id}" class="${SEL === c.id ? 'sel' : ''}"><td>${c.id}</td><td class="r">${f3(c.PA.N)}</td><td class="r">${c.PA.b} × ${c.PA.b}${c.PA.fijo ? ' ✎' : ''}${c.PA.ok ? '' : ' <span class="no">!</span>'}</td><td>${barCol(c.PA)}</td><td class="r">${f3(c.PB.N)}</td><td class="r">${c.PB.b} × ${c.PB.b}${c.PB.fijo ? ' ✎' : ''}${c.PB.ok ? '' : ' <span class="no">!</span>'}</td><td>${barCol(c.PB)}</td><td>${c.PB.estr ? `Ø${c.PB.estr.d} c/${c.PB.estr.s}` : '—'}</td></tr>`).join('');
+    const rows = Object.values(R.COL).map(c => `<tr data-pz="${c.id}" class="${SEL === c.id ? 'sel' : ''}"><td>${c.id}</td><td class="r">${f3(c.PA.N)}${c.PA.mano ? ' ✎' : ''}</td><td class="r">${c.PA.b} × ${c.PA.b}${c.PA.fijo ? ' ✎' : ''}${c.PA.ok ? '' : ' <span class="no">!</span>'}</td><td>${barCol(c.PA)}</td><td class="r">${f3(c.PB.N)}${c.PB.mano ? ' ✎' : ''}</td><td class="r">${c.PB.b} × ${c.PB.b}${c.PB.fijo ? ' ✎' : ''}${c.PB.ok ? '' : ' <span class="no">!</span>'}</td><td>${barCol(c.PB)}</td><td>${c.PB.estr ? `Ø${c.PB.estr.d} c/${c.PB.estr.s}` : '—'}</td></tr>`).join('');
     return `<div class="tblw"><table class="res"><thead><tr><th>Columna</th><th class="r">N PA (t)</th><th class="r">PA (cm)</th><th>Hierro PA</th><th class="r">N PB (t)</th><th class="r">PB (cm)</th><th>Hierro PB</th><th>Estribos PB</th></tr></thead><tbody>${rows}</tbody></table></div>`;
   }
   const rows = Object.entries(R.BAS).map(([cid, b]) => { const id = 'B' + cid.slice(1); return `<tr data-pz="${id}" class="${SEL === id ? 'sel' : ''}"><td>${id}</td><td>${selBase(cid)}</td><td class="r">${f3(b.Nt)}</td><td class="r">${b.a1} × ${b.a2}${b.fijoA ? ' ✎' : ''}</td><td class="r">${b.d}${b.fijoD ? ' ✎' : ''}</td><td>${b.bar1 ? `${b.bar1.n} Ø${b.bar1.d}` : '—'} / ${b.bar2 ? `${b.bar2.n} Ø${b.bar2.d}` : '—'}</td><td class="r">${nf(b.tau)}${b.ok ? '' : ' <span class="no">!</span>'}</td></tr>`; }).join('');
@@ -5931,6 +5989,7 @@ function supuestosHTML(R) {
     <li><b>Alturas</b>: ${nf(S.hPB)} m en PB y ${nf(S.hPA)} m en PA, que el TP no da. Son la longitud de pandeo de cada tramo de columna y su peso propio. No se incluye el tramo enterrado hasta la base.</li>
     <li><b>Muros sobre vigas</b>: ${S.murosV.length ? `${S.murosV.length} cargado${S.murosV.length > 1 ? 's' : ''} en Datos (${[...new Set(S.murosV.map(m => m.v))].join(', ')})` : 'ninguno, como en el TP. Si los muros exteriores de PA apoyan en las vigas de PB, cargalos en Datos ("Muros sobre vigas"): es carga real'}. El de L4 va en la q de la losa, como lo hizo el TP.</li>
     <li><b>Vigas</b> con el criterio del material (sección d₀ = luz / 10, Tabla 4 de H-17, sección rectangular, corte de la clase). Las continuas son las que comparten columna con relación de luces ≥ 0,75: V8–V10, V9–V11, V2–V3, V4–V5 y sus iguales de PA. V13 y V14 no (2,80 / 5,00 = 0,56).</li>
+    ${Object.keys(S.qMano).length || S.cargasV.length || Object.keys(S.colMano).length ? `<li><b>Cargas a mano</b>: ${[Object.keys(S.qMano).length ? `carga repartida propia en ${Object.keys(S.qMano).join(', ')}` : '', S.cargasV.length ? `${S.cargasV.length} carga${S.cargasV.length > 1 ? 's' : ''} sumada${S.cargasV.length > 1 ? 's' : ''} (${[...new Set(S.cargasV.map(x => x.v))].join(', ')})` : '', Object.keys(S.colMano).length ? `carga de vigas puesta a mano en ${Object.keys(S.colMano).join(', ')}` : ''].filter(Boolean).join('; ')}. Se marcan con ✎ en las tablas.</li>` : ''}
     <li><b>Torsión de V5</b>: el balcón L5 cuelga de V5 y le pasa, además de la carga, un momento que la retuerce (${nf(R.RL.L5.M, 3)} tm por metro). La clase no trata la torsión: no está calculada.</li>
     <li><b>Columnas</b> a compresión centrada con el método ω; la de PB no se hace más chica que la de PA. <b>Bases</b> centradas salvo que elijas otra cosa.</li>
   </ul>
@@ -5941,7 +6000,7 @@ function supuestosHTML(R) {
 /* controles: lo cargado en las vigas llega entero a las columnas, y cada borde de losa que carga tiene viga abajo */
 function totales(R) {
   let cargado = 0, losas = 0;
-  for (const b of R.G.BM) for (const u of b.uni) cargado += u.q * (u.x2 - u.x1);
+  for (const b of R.G.BM) { for (const u of b.uni) cargado += u.q * (u.x2 - u.x1); for (const p of b.P) if (p.mano) cargado += p.P; }
   let bases = 0; for (const c of Object.values(R.COL)) bases += sumR(c.vig.PA) + sumR(c.vig.PB);
   const sueltos = [];
   for (const s of R.G.SL) for (const it of R.RL[s.id].items) {
