@@ -5413,7 +5413,7 @@ function calcular() {
   /* sección (D4) por cadena: d0 = luz mayor entre apoyos / 10, redondeado a 5 cm; b0 = primer múltiplo de 5 ≥ d0 / 3 */
   for (const b of G.BM) {
     const tramos = b.chain.flatMap(id => { const x = BMI[id]; const [s1, s2] = x.sup.map(p => p[0]); return [s2 - s1, s1, x.L - s2].filter(v => v > 1e-6); });
-    const Lmax = Math.max(...tramos), d0 = up5(Lmax * 10), b0 = Math.max(15, up5(d0 / 3));
+    const Lmax = Math.max(...tramos), d0 = up5(Lmax * 10), b0 = up5(d0 / 3);
     b.sec = { Lmax, d0, b0, h: d0 - MAT.rec, pp: b0 / 100 * d0 / 100 * MAT.ha };
   }
   /* cargas repartidas de cada viga */
@@ -5574,10 +5574,10 @@ function disenoBase(Nt, c, tipo) {
   r.M1 = tipo === 'c' ? Nt * (a1 - b1) ** 2 / (8 * a1) : Nt * (a1 - b1) ** 2 / (2 * a1);
   r.M2 = tipo === 'e' || tipo === 'c' ? Nt * (a2 - b2) ** 2 / (8 * a2) : Nt * (a2 - b2) ** 2 / (2 * a2);
   r.hPunz = N / (r.pc * MAT.tauP);
-  if (tipo === 'c') { r.dRig = (r.a1 - c) / 2; r.d = Math.max(up5(r.dRig), up5(r.hPunz + MAT.recB), 25); r.h = r.d - MAT.recB; r.comoH = 'rig'; }
+  if (tipo === 'c') { r.dRig = (r.a1 - c) / 2; r.d = Math.max(up5(r.dRig), up5(r.hPunz + MAT.recB), 15); r.h = r.d - MAT.recB; r.comoH = 'rig'; }
   else {
     const Mm = Math.max(r.M1 * 100 / r.b2, r.M2 * 100 / r.b1);
-    r.hKh = 13.83 * Math.sqrt(Mm); r.h = Math.max(up5(r.hKh), up5(r.hPunz), 20); r.d = r.h + MAT.recB; r.comoH = 'kh';
+    r.hKh = 13.83 * Math.sqrt(Mm); r.h = Math.max(up5(r.hKh), up5(r.hPunz), 15 - MAT.recB); r.d = r.h + MAT.recB; r.comoH = 'kh';
   }
   for (let k = 0; k < 20; k++) {
     r.f1 = tabla4(r.M1 * 100, r.b2, r.h); r.f2 = tabla4(r.M2 * 100, r.b1, r.h);
@@ -5685,7 +5685,7 @@ function fichaViga(R, b) {
     <h3>1 · Dónde está y en qué apoya</h3>
     <p>Largo ${nf(b.L)} m, apoyada en ${apoyos}. ${cad}</p>
     <h3>2 · Sección (predimensionado)</h3>
-    <p>Con el criterio que usa el material para las vigas de la clase: <span class="mono">d₀ = luz / 10 = ${nf(sec.Lmax)} m / 10 = ${nf(sec.Lmax * 10, 1)} cm → ${sec.d0} cm</span> (la luz mayor entre apoyos${b.chain.length > 1 ? ' de las dos vigas continuas, que van con la misma sección' : ''}), <span class="mono">b₀ ≥ d₀ / 3 = ${nf(sec.d0 / 3, 1)} → ${sec.b0} cm</span>, <span class="mono">h = d₀ − 3 = ${sec.h} cm</span>. Peso propio: <span class="mono">${nf(sec.b0 / 100)} × ${nf(sec.d0 / 100)} × 2,4 = ${f3(sec.pp)} t/m</span>.</p>
+    <p>Con el criterio que usa el material para las vigas de la clase: <span class="mono">d₀ = luz / 10 = ${nf(sec.Lmax)} m / 10 = ${nf(sec.Lmax * 10, 1)} cm → ${sec.d0} cm</span> (la luz mayor entre apoyos${b.chain.length > 1 ? ' de las dos vigas continuas, que van con la misma sección' : ''}), <span class="mono">b₀ ≥ d₀ / 3 = ${nf(sec.d0 / 3, 1)} → ${sec.b0} cm</span> (el primer múltiplo de 5; la clase deja elegir entre d₀ / 3 y d₀ / 2 = ${nf(sec.d0 / 2, 1)} cm, por ejemplo con el ancho del muro que va abajo), <span class="mono">h = d₀ − 3 = ${sec.h} cm</span>. Peso propio: <span class="mono">${nf(sec.b0 / 100)} × ${nf(sec.d0 / 100)} × 2,4 = ${f3(sec.pp)} t/m</span>.</p>
     <h3>3 · Cargas</h3>
     <p>Cada losa le pasa la reacción de su borde. Las de dos direcciones salen de las columnas de reacciones de las Tablas 3.x (coeficiente × q × luz menor², la reacción total del borde, dividida por su largo); las de una dirección, q × L / 2; el voladizo, q × L + P.</p>
     ${tbl}
@@ -5739,7 +5739,7 @@ function fichaBase(R, id) {
         ${b.tipo === 'e' ? `Con a₂ = 2,5 a₁ (pág. 35, para achicar el momento): <span class="mono">a₁ = √(S / 2,5) = ${nf(Math.sqrt(b.S / 2.5), 1)} → ${b.a1} cm</span>, <span class="mono">a₂ = S / a₁ = ${nf(b.S / b.a1, 1)} → ${b.a2} cm</span> (como el ejemplo de la pág. 76).` : `Cuadrada: <span class="mono">a = √S = ${nf(Math.sqrt(b.S), 1)} → ${b.a1} cm</span> (redondeado a 10 cm, como el ejemplo de la pág. 75: 205 → 210).`}
         Ensanche para apoyar el encofrado de la columna (${b.c} × ${b.c} cm): b₁ = ${nf(b.b1, 1)} cm, b₂ = ${nf(b.b2, 1)} cm${b.tipo === 'e' ? ' (del lado de la medianera no hay ensanche: 2,5 en vez de 5, como el ejemplo de la pág. 77)' : ''}.</li>
       <li><b>Momentos</b> (págs. 33 a 37): la reacción del suelo empuja hacia arriba y ${b.tipo === 'c' ? 'cada mitad de la base es una ménsula' : 'el lado que sale de la columna es una sola ménsula'}. <span class="mono">M₁ = N (a₁ − b₁)² ${M1t} = ${f3(b.Nt)} × (${nf(b.a1 / 100)} − ${nf(b.b1 / 100, 3)})² ${M1t.replace('a₁', nf(b.a1 / 100))} = ${f3(b.M1)} tm</span>; <span class="mono">M₂ = N (a₂ − b₂)² ${M2t} = ${f3(b.M2)} tm</span>.${b.tipo === 'c' ? ' Ojo: el ejemplo 1 del apunte (pág. 75) no divide por a₁ y da 22,82 tm donde la fórmula da 10,87; los ejemplos 2 y 3 sí dividen. Acá se usa la fórmula.' : ''}</li>
-      <li><b>Altura</b>: ${b.comoH === 'rig' ? `base rígida (pág. 34), <span class="mono">d = (a₁ − c₁) / 2 = (${b.a1} − ${b.c}) / 2 = ${nf(b.dRig, 1)} cm</span>` : `con kh = 13,83 como los ejemplos de las págs. 77 y 79, <span class="mono">h = 13,83 × √(M / b) = ${nf(b.hKh, 1)} cm</span>`}; para el punzonado alcanzaría <span class="mono">h = N / (pc × 8) = ${nf(b.hPunz, 1)} cm</span>. Se adopta <b>d = ${b.d} cm, h = d − 5 = ${b.h} cm</b>${b.subio ? ' (se subió para que kh entre en la Tabla 4)' : ''}; en el borde d₀ = el mayor de 15 cm y d / 3 = ${nf(b.do, 0)} cm.</li>
+      <li><b>Altura</b>: ${b.comoH === 'rig' ? `base rígida (pág. 34), <span class="mono">d = (a₁ − c₁) / 2 = (${b.a1} − ${b.c}) / 2 = ${nf(b.dRig, 1)} cm</span>` : `con kh = 13,83 como los ejemplos de las págs. 77 y 79, <span class="mono">h = 13,83 × √(M / b) = ${nf(b.hKh, 1)} cm</span>`}; para el punzonado alcanzaría <span class="mono">h = N / (pc × 8) = ${nf(b.hPunz, 1)} cm</span>. Se adopta el mayor, redondeado a 5 cm: <b>d = ${b.d} cm, h = d − 5 = ${b.h} cm</b>${b.subio ? ' (se subió para que kh entre en la Tabla 4)' : ''}. En el borde, d₀ = el mayor de 15 cm y d / 3 = ${nf(b.do, 0)} cm (pág. 32), así que d nunca baja de 15 cm.</li>
       <li><b>Flexión</b> (Tabla 4): según a₁, <span class="mono">kh = ${b.h} / √(${nf(b.M1 * 100, 1)} / ${nf(b.b2, 1)}) = ${nf(b.f1.kh)}</span> → ke ${f3(b.f1.ke)}, <span class="mono">fe₁ = ${f3(b.f1.ke)} × ${nf(b.M1 * 100, 1)} / ${b.h} = ${nf(b.f1.fe)} cm²</span>; según a₂, <span class="mono">kh = ${b.h} / √(${nf(b.M2 * 100, 1)} / ${nf(b.b1, 1)}) = ${nf(b.f2.kh)}</span> → ke ${f3(b.f2.ke)}, <span class="mono">fe₂ = ${nf(b.f2.fe)} cm²</span>. El ancho comprimido es el de la columna ensanchada (b₂ para M₁, b₁ para M₂).</li>
       <li><b>Barras</b>: parrilla con separación ≤ 20 cm (pág. 34) y recubrimiento 5 cm. Según a₁: ${b.bar1 ? `<b>${b.bar1.n} Ø${b.bar1.d}</b> (${nf(b.bar1.A)} cm²) repartidas en ${b.a2 - 10} cm, c/${nf(b.bar1.sep, 1)} cm` : '—'}; según a₂: ${b.bar2 ? `<b>${b.bar2.n} Ø${b.bar2.d}</b> (${nf(b.bar2.A)} cm²) c/${nf(b.bar2.sep, 1)} cm` : '—'}. Se elige el Ø de 8 a 16 que da menos área con separación entre 10 y 20 cm (criterio de este cálculo).</li>
       <li><b>Punzonado</b> (pág. 33): perímetro de la columna que apoya, <span class="mono">pc = ${pcT} = ${b.pc} cm</span>. <span class="mono">τp = N / (pc × h) = ${nf(N, 0)} / (${b.pc} × ${b.h}) = ${nf(b.tau)} kg/cm²</span> ${b.tau <= 8 ? '≤ 8: verifica.' : '<span class="no">&gt; 8: no verifica</span>, hay que subir h.'}</li>
@@ -5776,6 +5776,7 @@ function supuestosHTML(R) {
     <li><b>Alturas</b>: ${nf(S.hPB)} m en PB y ${nf(S.hPA)} m en PA, que el TP no da. Son la longitud de pandeo de cada tramo de columna y su peso propio. No se incluye el tramo enterrado hasta la base.</li>
     <li><b>Muros de planta alta sobre vigas de PB</b>: ${S.muros ? 'incluidos (0,20 m × altura de PA × 1,6 t/m³)' : 'no incluidos, como en el TP. Si los muros exteriores de PA apoyan en esas vigas, marcá la casilla de Datos: es carga real'}.</li>
     <li><b>Vigas</b> con el criterio del material (sección d₀ = luz / 10, Tabla 4 de H-17, sección rectangular, corte de la clase). Las continuas son las que comparten columna con relación de luces ≥ 0,75: V8–V10, V9–V11, V2–V3, V4–V5 y sus iguales de PA. V13 y V14 no (2,80 / 5,00 = 0,56).</li>
+    <li><b>Torsión de V5</b>: el balcón L5 cuelga de V5 y le pasa, además de la carga, un momento que la retuerce (${nf(R.RL.L5.M, 3)} tm por metro). La clase no trata la torsión: no está calculada.</li>
     <li><b>Columnas</b> a compresión centrada con el método ω; la de PB no se hace más chica que la de PA. <b>Bases</b> centradas salvo que elijas otra cosa.</li>
   </ul>
   <p class="fine">Controles: todo lo que cargan las vigas de los dos pisos (losas, peso propio${S.muros ? ', muros' : ''}) suma ${f3(R.tot.cargado)} t y lo que les llega a las columnas desde las vigas, ${f3(R.tot.bases)} t: ${Math.abs(R.tot.cargado - R.tot.bases) < 1e-6 ? '<span class="ok">iguales, no se pierde carga en el camino</span>' : '<span class="no">no coinciden</span>'}. ${R.tot.sueltos.length ? `<span class="no">Bordes de losa sin viga: ${R.tot.sueltos.join('; ')}</span>` : 'Todos los bordes de losa que cargan tienen una viga abajo.'} Las reacciones de las Tablas 3.x suman casi exacto q × área de cada losa (diferencias de menos del 0,6 %, por el redondeo de los coeficientes; se ve en la ficha de cada losa).</p>`;
